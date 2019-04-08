@@ -78,13 +78,25 @@ footwear,class characteristics,computer vision, neural networks
 \linenumbers
 
 \section{Introduction}
-Most forensic examinations of footwear pattern evidence are limited to class characteristic based matches; that is, matches based on the positioning of geometric features within the tread pattern. Some of these features may include brand logos and size markings, while others are more generic geometric shapes, such as circles, triangles, stars, and chevrons. Class characteristic matches can be used for elimination, but are not sufficient for identification, as the characteristics are shared by all shoes with the same size, make, and model \citep{grossVariabilitySignificanceClass2013,bodziakfootwear2000}. Several attempts have been made to automatically identify features in both prints and shoe tread images, ranging from the
+Most forensic examinations of footwear pattern evidence are limited to class characteristic based matches; that is, matches based on the positioning of geometric features within the tread pattern. Some of these features may include brand logos and size markings, while others are more generic geometric shapes, such as circles, triangles, stars, and chevrons. Class characteristic matches can be used for elimination, but are not sufficient for identification, as the characteristics are shared by all shoes with the same size, make, and model \citep{grossVariabilitySignificanceClass2013,bodziakfootwear2000}. Several attempts have been made to automatically identify features in both prints and shoe tread images, using a range of low-level techniques including fractal decomposition \citep{alexanderAutomaticClassificationRecognition1999}, scale-invariant feature recognition \citep{pavlouAutomaticExtractionClassification2006}, Fourier-Mellin transformation \citep{guehamAutomaticRecognitionShoeprints2008}, and other classical image analysis methods. Vast advances have been made in the field of computer vision since 2012 \citep{krizhevskyImageNetClassificationDeep2012}, when convolutional neural networks (CNNs) were introduced. These networks are designed to mimic the process of human vision, and typically involve application of sets of filters, some of which mimic the filters used in the low-level techniques used by early automatic classification attempts. Recently, raw output from CNN models have been used to identify or match shoes to prints \citep{kongCrossDomainImageMatching2019,kongCrossDomainForensicShoeprint2017,zhangAdaptingConvolutionalNeural2017}; these methods work relatively well, but the features used for matching are not generally informative for humans, who typically classify shoes by patterns and spatial relationships \citep{davisIntelligenceApproachFootwear1981,grossVariabilitySignificanceClass2013}. In this paper, we discuss a hybrid approach, using features from a pre-trained CNN to develop a classifier which automatically identifies geometric patterns in images of shoe treads. Working within the feature space used by forensic examiners allows us to augment human-identified features with model output, assessing similarity of different shoe images on a feature set that is explicitly relevant to the domain.
+
+% This is a really really high level overview - may need to be a bit deeper
 
 \section{Materials and Methods}
+\paragraph{VGG16}
+
+\paragraph{LabelMe Shoe Annotations}
+
+\paragraph{Transfer Learning}
 
 \section{Results}
+\paragraph{Overall Accuracy} % Model-wise and class-by-class, w/ confusion matrix
+
+\paragraph{Model Diagnostics}
 
 \section{Conclusions}
+
+\section{Future Work}
 
 
 \section*{References}
