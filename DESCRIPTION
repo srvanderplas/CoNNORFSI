@@ -1,0 +1,17 @@
+Package: CoNNORFSI
+Type: Package
+Title: Shoeprint Geometry Analysis
+Version: 0.1.0
+Authors@R: 
+  person("Miranda", "Tilton", , "tiltonm@iastate.edu", c("aut", "cre")),
+  person("Susan", "Vanderplas", , "srvander@iastate.edu", c("aut", "ths"))
+Description: This package contains the code and paper describing CoNNOR, the
+    Convolutional Neural Network for Outsole Recognition. This computer vision
+    model can recognize geometric features in images of shoe outsoles, providing
+    an automatic method for identifying tread characteristics for class 
+    characteristic identification and matching.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/srvanderplas/CoNNORFSI
+BugReports: https://github.com/srvanderplas/CoNNORFSI/issues
