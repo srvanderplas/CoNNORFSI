@@ -37,11 +37,17 @@
 \bibliographystyle{elsarticle-num}
 %%%%%%%%%%%%%%%%%%%%%%%
 
+<<setup, include = F>>=
+knitr::opts_chunk$set(echo = F, dev = "pdf", dpi = 1000)
+@
+
 \begin{document}
 
 \begin{frontmatter}
 
-\title{A Convolutional Neural Network for Outsole Recognition}
+\title{A Convolutional Neural Network for Outsole Recognition\tnoteref{t1}}
+\tnotetext[t1]{This document is the results of the research
+project funded ....}
 
 %% Group authors per affiliation:
 % \author{Miranda Tilton and Susan Vanderplas\fnref{csafe}}
@@ -49,14 +55,15 @@
 % \fntext[csafe]{195 Durham Center, 613 Morill Rd., Ames, IA 50011}
 
 % or include affiliations in footnotes:
-\author[mymainaddress]{Miranda Tilton}
+\author[1]{Miranda Tilton\fnref{isu}}
+\ead{tiltonm@iastate.edu}
 
-\author[mymainaddress]{Susan Vanderplas\corref{mycorrespondingauthor}}
-\cortext[mycorrespondingauthor]{Corresponding author}
-\ead[url]{https://forensicstats.org}
+\author[1]{Susan Vanderplas\corref{cor1}\fnref{isu}}
+\cortext[cor1]{Corresponding author}
 \ead{srvander@iastate.edu}
 
-\address[mymainaddress]{Statistics Department, Iowa State University}
+\address[1]{195 Durham Center, 613 Morill Rd, Ames, IA 50010}
+\fntext[isu]{Center for Statistical Applications in Forensic Evidence, Iowa State University}
 
 \begin{abstract}
 This template helps you to create a properly formatted \LaTeX\ manuscript.
