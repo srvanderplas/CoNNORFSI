@@ -1,0 +1,5 @@
+*-concordance.tex
+*.bbl
+*.log
+*.spl
+*.synctex.gz
