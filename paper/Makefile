@@ -51,7 +51,7 @@ cleanall: clean
 		-e "knitr::opts_chunk[['set']](cache.path='$(CACHEDIR)/$*-')" \
 		-e "knitr::knit('$*.Rnw', output='build/$*.tex')"
 	pdflatex -halt-on-error -output-directory=build build/$*.tex
-	[ -h "$*.pdf" ] || ln -s build/$*.pdf $*.pdf
+	[ -h "$*.pdf" ] || cp build/$*.pdf $*.pdf
 
 # extract an R file from an RNoWeb file
 %-purled.R: %.Rnw
