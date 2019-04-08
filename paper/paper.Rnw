@@ -78,7 +78,7 @@ footwear,class characteristics,computer vision, neural networks
 \linenumbers
 
 \section{Introduction}
-
+Most forensic examinations of footwear pattern evidence are limited to class characteristic based matches; that is, matches based on the positioning of geometric features within the tread pattern. Some of these features may include brand logos and size markings, while others are more generic geometric shapes, such as circles, triangles, stars, and chevrons. Class characteristic matches can be used for elimination, but are not sufficient for identification, as the characteristics are shared by all shoes with the same size, make, and model \citep{grossVariabilitySignificanceClass2013,bodziakfootwear2000}. Several attempts have been made to automatically identify features in both prints and shoe tread images, ranging from the
 
 \section{Materials and Methods}
 

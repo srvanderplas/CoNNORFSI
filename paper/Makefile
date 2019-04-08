@@ -20,7 +20,6 @@ FIGUREDIR= figures
 .PHONY: all purled clean cleanall open
 .SUFFIXES: .Rnw .pdf .R .tex
 
-
 # these targets will be made by default
 all: $(PDFS)
 
@@ -45,13 +44,13 @@ cleanall: clean
 # compile a PDF from a RNoWeb file
 %.pdf: %.Rnw Makefile
 	mkdir -p build
+	cp mybibfile.bib build/mybibfile.bib
 	$(R_HOME)/bin/Rscript\
 		-e "require(knitr)" \
 		-e "knitr::opts_chunk[['set']](fig.path='$(FIGUREDIR)/$*-')" \
 		-e "knitr::opts_chunk[['set']](cache.path='$(CACHEDIR)/$*-')" \
 		-e "knitr::knit('$*.Rnw', output='build/$*.tex')"
-	pdflatex -halt-on-error -output-directory=build build/$*.tex
-	[ -h "$*.pdf" ] || cp build/$*.pdf $*.pdf
+	latexmk -pdf -halt-on-error -output-directory=build build/$*.tex || cp build/$*.pdf $*.pdf
 
 # extract an R file from an RNoWeb file
 %-purled.R: %.Rnw
