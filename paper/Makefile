@@ -15,6 +15,7 @@ R_FILES= $(RNW_FILES:.Rnw=-purled.R)
 # cache and figure directories
 CACHEDIR= cache
 FIGUREDIR= figures
+IMAGEDIR= images
 
 
 .PHONY: all purled clean cleanall open
@@ -50,6 +51,7 @@ cleanall: clean
 		-e "knitr::opts_chunk[['set']](fig.path='$(FIGUREDIR)/$*-')" \
 		-e "knitr::opts_chunk[['set']](cache.path='$(CACHEDIR)/$*-')" \
 		-e "knitr::knit('$*.Rnw', output='build/$*.tex')"
+	cp $(IMAGEDIR) build/$(IMAGEDIR)
 	latexmk -pdf -halt-on-error -output-directory=build build/$*.tex || cp build/$*.pdf $*.pdf
 
 # extract an R file from an RNoWeb file
