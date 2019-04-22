@@ -37,6 +37,13 @@
 \bibliographystyle{elsarticle-num}
 %%%%%%%%%%%%%%%%%%%%%%%
 
+%%% Commenting %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[table]{xcolor}
+\newcommand{\mt}[1]{{\color{magenta} #1}}
+\newcommand{\svp}[1]{{\color{teal} #1}}
+\newcommand{\fix}[1]{{\color{orange} #1}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 <<setup, include = F>>=
 knitr::opts_chunk$set(echo = F, dev = "pdf", dpi = 1000)
 @
@@ -88,14 +95,14 @@ In this paper, we discuss an alternate approach that uses an additional model la
 \paragraph{Transfer Learning}
 Neural networks are composed of a set of layers, called the model, base which contain feature detectors, and classifier, the model head, which connect meaningful features to classification labels. A relatively simple convolutional neural network which processes image data may contain more than 14 million parameters in the model base and an additional 120 million parameters in the model head; to train a model of this nature requires millions of labeled images and a significant amount of computational power. Assembling data to train a network from scratch is often a nearly impossible task; the process of \emph{transfer learning} is a natural solution to this common problem. Transfer learning leverages the modularity of neural networks, that is, that the model base can be separated from the classifier which produces predictions.
 
-Many convolutional neural networks have been trained on a set of images known as ImageNet; these images are hierarchically labeled, so the same image of a dog may have labels of sky, grass, and trees, and the dog may be labeled as ``mammal'', ``dog'', ``retriever'', and ``golden retriever'' at increasing levels of label complexity. CNNs trained on ImageNet are optimized for general human-like vision, that is, the ability to recognize a large set of different features simultaneously. As a result, the base of networks trained on these sets are often used for transfer learning, because the initial layers are broadly generalizable to a wide variety of more specific image labeling tasks.
+Many convolutional neural networks have been trained on a set of images known as ImageNet; these images are hierarchically labeled, so the same image of a dog may have labels of sky, grass, and trees, and the dog may be labeled as ``mammal'', ``dog'', ``retriever'', and ``golden retriever'' at increasing levels of label complexity\fix{cite imagenet here}. CNNs trained on ImageNet are optimized for general human-like vision, that is, the ability to recognize a large set of different features simultaneously. As a result, the base of networks trained on these sets are often used for transfer learning, because the initial layers are broadly generalizable to a wide variety of more specific image labeling tasks. \fix{add a few VGG16 filters here to demonstrate the generic filters in layers 1-4}
 
 Transfer learning in neural network contexts involves freezing the weights of the pre-trained model base taken from a network trained on a more general set of images, so that during the training process, only the weights of the newly-added classifier are updated\citep{oquabLearningTransferringMidlevel2014}. In many cases, the entire model base is used, and fitted with a new model head; the modularity of CNNs makes this process relatively simple, and allows researchers to leverage pre-trained networks when working with diffierent sets of image data. Transfer learning allows CNNs to be applied to smaller datasets of several thousand images, reduces the amount of computational time required to fit the model, and provides boosted performance compared to training a new model from scratch \citep{yosinskiHowTransferableAre2014}. It has been successfully applied in automatic classification of medical images \citep{shinDeepConvolutionalNeural2016} as well as in various applications of shoe forensics \citep{kongCrossDomainForensicShoeprint2017,kongCrossDomainImageMatching2019a,zhangAdaptingConvolutionalNeural2017}.
 
 In this paper, we will demonstrate the use of transfer learning to automatically identify features in shoe treads which are used by forensic examiners, using a general-purpose CNN with relatively simple structure, VGG16, and a database of labeled shoe tread images we have assembled for this project. This approach differs from other approaches \citep{kongCrossDomainForensicShoeprint2017,kongCrossDomainImageMatching2019a,zhangAdaptingConvolutionalNeural2017} in automatic footwear identification which use the output from the model base directly and do not attempt to add human-friendly contextual information with an additional classifier.
 
 \paragraph{VGG16}
-Developed by Oxford's Visual Graphics Group, VGG16 is a CNN with 16 ``\functional" (i.e., convolutional and densely connected) layers and 5 ``\structural" max pooling layers\citep{krizhevskyImageNetClassificationDeep2012}. In contrast to other popular networks, like ResNet, VGG has a relatively simple structure that provides easier training and interpretability with very little sacrificed accuracy. The simplicity of this structure provides the ability to peer into the inner workings of the network for diagnostic purposes, providing a distinct advantage over more complicated network structures with slightly higher accuracy ratings.
+Developed by Oxford's Visual Graphics Group, VGG16 is a CNN with 16 ``functional" (i.e., convolutional and densely connected) layers and 5 ``structural" max pooling layers\citep{krizhevskyImageNetClassificationDeep2012}. In contrast to other popular networks, like ResNet, VGG has a relatively simple structure that provides easier training and interpretability with very little sacrificed accuracy. The simplicity of this structure provides the ability to peer into the inner workings of the network for diagnostic purposes, providing a distinct advantage over more complicated network structures with slightly higher accuracy ratings.
 
 Also mention ImageNet somewhere...
 
