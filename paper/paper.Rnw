@@ -85,11 +85,20 @@ In the wider field of computer vision, attention has turned to more robust metho
 In this paper, we discuss an alternate approach that uses an additional model layer to transfer the feature vector output into a vector of probabilities representing the detection of geometric elements in shoe tread images. Working within the feature space used by forensic examiners allows us to augment human-identified features with model output, assessing similarity of different shoe images on a feature set that is explicitly relevant to the domain.
 
 \section{Materials and Methods}
+\paragraph{Transfer Learning}
+New content: Convolutional neural networks consist of a model base, comprised of feature detectors which are used to map the characteristics of an image, and a classifier (or model head) that uses weights to meaningfully connect image features to classification labels. A relatively simple CNN may contain more than 20 million parameters that must be trained on human-labelled data. Training a CNN from scratch for a new image classification task requires millions of training images and a substantial amount of computational power. (XXX Features are relatively flexible, and new objects are likely some combination of those features.) Thus, although a model base may be trained for one task, it is often easily applied to a new task.
+
+Stolen from CC: Transfer learning is the process of using layers from a CNN (or other classification model) trained on a general image recognition task when fitting a model intended for a more specific purpose. The layers which are deemed to identify broadly generalizable patterns are used with their pre-trained weights; new layers are added to customize the model to the specific task at hand, and typically, only these new weights are updated when the model is fit. In many cases, the entire model base is used, and fitted with a new model head; the modularity of CNNs makes this process relatively simple, and allows researchers to leverage pre-trained networks when working with diffierent sets of image data. Transfer learning allows CNNs to be applied to smaller datasets of several thousand images and also reduces the amount of computational time required to fit the model. Transfer learning leverages the modularity of neural networks|the pretrained base of the model can be separated from the full model and a new model head can be trained to connect that base to the output classes.
+
 \paragraph{VGG16}
+Developed by Oxford's Visual Graphics Group, VGG16 is a CNN with 16 ``\functional" (i.e., convolutional and densely connected) layers and 5 ``\structural" max pooling layers. In contrast to other popular networks, like ResNet, VGG has a relatively simple structure that provides easier training and interpretability with very little sacrificed accuracy. The simplicity of this structure provides the ability to peer into the inner workings of the network for diagnostic purposes, providing a distinct advantage over more complicated network structures with slightly higher accuracy ratings.
+
+Also mention ImageNet somewhere...
 
 \paragraph{LabelMe Shoe Annotations}
+Nine geometric class characteristics were chosen: Circle, ..., and Text. Thousands of outsole images were scraped online shoe retail sites. These images were then uploaded for use in a tool called LabelMe (Russell et al., 2008), a labeling/annotating interface which allows users to easily select and label regions of an image. To date, 4371 shoes have been labeled, yielding 27135 multi-label images.
 
-\paragraph{Transfer Learning}
+
 
 \section{Results}
 \paragraph{Overall Accuracy} % Model-wise and class-by-class, w/ confusion matrix
