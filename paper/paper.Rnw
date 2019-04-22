@@ -104,6 +104,12 @@ In this paper, we will demonstrate the use of transfer learning to automatically
 \paragraph{VGG16}
 Developed by Oxford's Visual Graphics Group, VGG16 is a CNN with 16 ``functional" (i.e., convolutional and densely connected) layers and 5 ``structural" max pooling layers\citep{krizhevskyImageNetClassificationDeep2012}. In contrast to other popular networks, like ResNet, VGG has a relatively simple structure that provides easier training and interpretability with very little sacrificed accuracy. The simplicity of this structure provides the ability to peer into the inner workings of the network for diagnostic purposes, providing a distinct advantage over more complicated network structures with slightly higher accuracy ratings.
 
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{images/vgg16-shoe-nolabel}
+\caption{VGG16 test image}
+\end{figure}
+
 Also mention ImageNet somewhere...
 
 \paragraph{LabelMe Shoe Annotations}

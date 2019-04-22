@@ -51,7 +51,7 @@ cleanall: clean
 		-e "knitr::opts_chunk[['set']](fig.path='$(FIGUREDIR)/$*-')" \
 		-e "knitr::opts_chunk[['set']](cache.path='$(CACHEDIR)/$*-')" \
 		-e "knitr::knit('$*.Rnw', output='build/$*.tex')"
-	cp $(IMAGEDIR) build/$(IMAGEDIR)
+	cp -r $(IMAGEDIR) build/$(IMAGEDIR)
 	latexmk -pdf -halt-on-error -output-directory=build build/$*.tex || cp build/$*.pdf $*.pdf
 
 # extract an R file from an RNoWeb file
