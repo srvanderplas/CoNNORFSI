@@ -158,10 +158,7 @@ The categories we use in this study are operationally defined as follows:
 \caption[Geometric elements used to classify tread patterns.]{A set of geometric elements used to classify tread patterns. Categories modified from \cite{grossVariabilitySignificanceClass2013}.}\label{tab:class-char-examples}
 \end{table}
 
-\mt{Thousands of outsole images were scraped online shoe retail sites. These images were then uploaded for use in a tool called LabelMe (Russell et al., 2008), a labeling/annotating interface which allows users to easily select and label regions of an image. Over the course of six months, multiple students worked to label images of shoes according to the classification scheme using LabelMe.
-
-After annotation using the LabelMe software package, images are processed by an R script that identifies the minimum bounding rectangle of the region, crops the image to that region, and scales the cropped area to a 256 x 256 pixel image suitable for analysis by the convolutional neural network. During this process, aspect ratio is not preserved, though efforts are made to label regions
-which are relatively square to minimize the effect of this distortion. To date, 4371 shoes have been labeled, yielding 27135 multi-label images.}
+\mt{Thousands of outsole images were scraped online shoe retail sites} \svp{and annotated using LabelMe, a tool for image annotation in computer vision problems\citep{labelme}}. After annotation, images are processed by an R script that identifies the minimum bounding rectangle of the region, crops the image to that region, and scales the cropped area to a 256 x 256 pixel image suitable for analysis by the convolutional neural network. During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, 4371 shoes have been labeled, yielding 27135 multi-label images.}\fix{actual counts}
 
 \begin{figure}[hbt]
 \centering
@@ -192,7 +189,7 @@ annotated_imgs %>%
 
 \svp{It might be good to add in some (new) statistics relating brand information to common geometric features in tread - show, for instance, the top N brands with bowties vs. the top N brands with polygons. }
 
-\mt{Augmentation? Model training parameters?}
+\mt{Augmentation? Model training parameters?}\svp{VERY briefly mention augmentation. Make sure to explain the difference between validation, training, and test sets}.
 
 \section{Results}
 \paragraph{Overall Accuracy} % Model-wise and class-by-class, w/ confusion matrix
