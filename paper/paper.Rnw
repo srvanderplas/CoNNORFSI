@@ -93,7 +93,7 @@ In this paper, we discuss an alternate approach that uses an additional model la
 
 \section{Materials and Methods}
 \paragraph{Transfer Learning}
-\mt{Neural networks are composed of sets of layers; the early layers, which are called the model base, contain feature detectors, and the final layers make up the classifier, or model head, which connects meaningful features to classification labels.} A relatively simple convolutional neural network which processes image data may contain more than 14 million parameters in the model base and an additional 120 million parameters in the model head; to train a model of this nature requires millions of labeled images and a significant amount of computational power. Assembling data to train a network from scratch is often a nearly impossible task; the process of \emph{transfer learning} is a natural solution to this common problem. Transfer learning leverages the modularity of neural networks, that is, that the model base can be separated from the classifier which produces predictions.
+Neural networks are composed of sets of layers; the early layers, which are called the model base, contain feature detectors, and the final layers make up the classifier, or model head, which connects meaningful features to classification labels. A relatively simple convolutional neural network which processes image data may contain more than 14 million parameters in the model base and an additional 120 million parameters in the model head; to train a model of this nature requires millions of labeled images and a significant amount of computational power. Assembling data to train a network from scratch is often a nearly impossible task; the process of \emph{transfer learning} is a natural solution to this common problem. Transfer learning leverages the modularity of neural networks, that is, that the model base can be separated from the classifier which produces predictions.
 
 Many convolutional neural networks have been trained on a set of images known as ImageNet; these images are hierarchically labeled, so the same image of a dog may have labels of sky, grass, and trees, and the dog may be labeled as ``mammal'', ``dog'', ``retriever'', and ``golden retriever'' at increasing levels of label complexity \citep{dengImageNetLargeScaleHierarchical}. CNNs trained on ImageNet are optimized for general human-like vision, that is, the ability to recognize a large set of different features simultaneously. As a result, the base of networks trained on these sets are often used for transfer learning, because the initial layers are broadly generalizable to a wide variety of more specific image labeling tasks. \fix{add a few VGG16 filters here to demonstrate the generic filters in layers 1-4} \mt{All of them? Four per block?}
 
@@ -121,14 +121,14 @@ In order to train a new head for the VGG16 model base, human-labeled images are 
 
 \paragraph{Annotated Training Data}
 
-\svp{Start with classification scheme. Mention that it was developed in consultation with experts as well as based on past papers and classification schemes.}
-\mt{I don't know much about the consultation with experts...}
+% \svp{Start with classification scheme. Mention that it was developed in consultation with experts as well as based on past papers and classification schemes.}
+% \mt{I don't know much about the consultation with experts...}
 
-\mt{Class characteristics are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes. A sufficiently well-defined set of features can separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}. \citet{grossVariabilitySignificanceClass2013} define geometric features such as circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. Working from these categories, \fix{in addition to consultation with experts}, a set of categories were assembled that is more suited to recognition by convolutional neural networks, as some of the definitions used in \citet{grossVariabilitySignificanceClass2013} require spatial context which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class.}
+Class characteristics are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes \svp{(e.g. all shoes of a specific brand and size)}. A sufficiently well-defined set of features can be used to separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}; the set of features used in that study included circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. After consulting with practitioners, we developed a set of categories suitable for automatic recognition by convolutional neural networks. These modifications were necessary because some of the definitions used in \citet{grossVariabilitySignificanceClass2013} require contextual spatial information which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class.}
 
-\mt{
+The categories we use in this study are operationally defined as follows:
 \begin{description}
-\item [Bowtie] Bowtie shapes are roughly quadrilateral, with two opposite concave faces. The remaining two faces can be convex or straight, and the concave faces may have straight portions, so long as there is a concave region. Using this definition, shapes such as butterflies are included as bowties.
+\item [Bowtie] Bowtie shapes are roughly quadrilateral, with two opposite concave faces. The remaining two faces can be convex or straight, and the concave faces may have straight portions, so long as there is a concave region. Using this definition, shapes such as butterflies are included as bowties. \svp{I'm still on the fence - we can just not mention this, or we could move butterflies to "star"...}
 \item [Chevron] Chevron shapes include repeating parallel lines as well as individual ``v" shapes. They may be angular but can also be curved.
 \item [Circle] Circles include ellipses and ovals; they must be round.
 \item [Line] Lines are repeated and parallel; a more general definition of a line would be difficult to differentiate from many other patterns. Lines can be mildly curved.
@@ -139,11 +139,9 @@ In order to train a new head for the VGG16 model base, human-labeled images are 
 \item [Triangle] Triangles are any three-sided figure. Like quadrilaterals, they can have rounded corners. In some cases, it is difficult to distinguish between a trapezoidal shape and a triangle when rounded corners are involved.
 \item [Other] Other features which were marked include logos, various textures (including crepe, stippling, etc.), and smooth regions with no discernible features. These regions are grouped and provide additional information---that none of the previous nine categories are present.
 \end{description}
-}
 
 \begin{table}
 \centering
-
 \setlength\tabcolsep{1mm}
 \begin{tabular}{rccl}
      Bowtie & \raisebox{-.5\height}{\includegraphics[width=.3\textwidth]{images/class_examples/bowtie_examples.png}} &
