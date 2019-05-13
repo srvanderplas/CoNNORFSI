@@ -102,7 +102,7 @@ Transfer learning in neural network contexts involves freezing the weights of th
 In this paper, we will demonstrate the use of transfer learning to automatically identify features in shoe treads which are used by forensic examiners, using a general-purpose CNN with relatively simple structure, VGG16, and a database of labeled shoe tread images we have assembled for this project, which are both described below. This approach differs from other approaches \citep{kongCrossDomainForensicShoeprint2017,kongCrossDomainImageMatching2019a,zhangAdaptingConvolutionalNeural2017} in automatic footwear identification which use the output from the model base directly and do not attempt to add human-friendly contextual information with an additional classifier.
 
 \paragraph{VGG16}
-Developed by Oxford's Visual Graphics Group, VGG16 is a CNN with 16 ``functional" (i.e., convolutional and densely connected) layers and 5 ``structural" max pooling layers\citep{krizhevskyImageNetClassificationDeep2012}. In contrast to other popular networks, like ResNet, VGG has a relatively simple structure that provides easier training and interpretability with very little sacrificed accuracy. The simplicity of this structure provides the ability to peer into the inner workings of the network for diagnostic purposes, providing a distinct advantage over more complicated network structures with slightly higher accuracy ratings. VGG16 is a common choice for transfer learning because of this structural simplicity; it has been used for detection of text in natural images \citep{zhongDeepTextUnifiedFramework2016}, medical imaging classification \citep{oquabLearningTransferringMidlevel2014}, classification of weld defects \citep{liuWeldDefectImages2018}, and many other domain-specific image recognition tasks that are more specific than the ImageNet data on which it was trained. \autoref{fig:VGG16-structure} shows the architecture of VGG16; with transfer learning, the VGG16 model head is replaced with a trained model head specific to recognition of shoeprint class characteristics.
+Developed by Oxford's Visual Graphics Group, VGG16 is a CNN with 16 ``functional" (i.e., convolutional and densely connected) layers and 5 ``structural" max pooling layers \citep{krizhevskyImageNetClassificationDeep2012}. In contrast to other popular networks, like ResNet, VGG has a relatively simple structure that provides easier training and interpretability with very little sacrificed accuracy. The simplicity of this structure provides the ability to peer into the inner workings of the network for diagnostic purposes, providing a distinct advantage over more complicated network structures with slightly higher accuracy ratings. VGG16 is a common choice for transfer learning because of this structural simplicity; it has been used for detection of text in natural images \citep{zhongDeepTextUnifiedFramework2016}, medical imaging classification \citep{oquabLearningTransferringMidlevel2014}, classification of weld defects \citep{liuWeldDefectImages2018}, and many other domain-specific image recognition tasks that are more specific than the ImageNet data on which it was trained. \autoref{fig:VGG16-structure} shows the architecture of VGG16; with transfer learning, the VGG16 model head is replaced with a trained model head specific to recognition of shoeprint class characteristics.
 
 \begin{figure}
 \centering
@@ -110,51 +110,60 @@ Developed by Oxford's Visual Graphics Group, VGG16 is a CNN with 16 ``functional
 \caption[VGG16 structure]{VGG16 consists of five convolutional blocks that make up the model base. Each convolutional block contains an increasing number of increasingly complex features. After the convolutional blocks, the fully connected layers of the model head are used to make global connections between separate features.}\label{fig:VGG16-structure}
 \end{figure}
 
+<<vgg16layers, fig.width = 7, fig.height = 5.75>>=
+imgs <- list.files("./images/vgg16layers/", recursive = T, full.names = T)
+pngs <- lapply(imgs, function(x) png::readPNG(x)[46:1596, 32:1582, ])
+grobs <- lapply(pngs, grid::rasterGrob)
+gridExtra::grid.arrange(grobs = grobs, nrow = 5)
+@
+
 In order to train a new head for the VGG16 model base, human-labeled images are necessary. The next section describes how these images were produced and used to fit our custom classifier.
 
 \paragraph{Annotated Training Data}
 
 \svp{Start with classification scheme. Mention that it was developed in consultation with experts as well as based on past papers and classification schemes.}
+\mt{I don't know much about the consultation with experts...}
 
-\mt{\begin{itemize}
-\item Goal: Scheme that is broad enough to classify most shoes and specific enough to identify meaningful similarity between visually similar shoes
-\item Papers (Gross et all, 2013) suggested geometric features have discriminatory power
-\item Multi-label: label all shapes in a region
-\item Modified: e.g., polygon out of pentagon and hexagon
-\item Refer to table
-\end{itemize}}
+\mt{Class characteristics are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes. A sufficiently well-defined set of features can separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}. \citet{grossVariabilitySignificanceClass2013} define geometric features such as circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. Working from these categories, \fix{in addition to consultation with experts}, a set of categories were assembled that is more suited to recognition by convolutional neural networks, as some of the definitions used in \citet{grossVariabilitySignificanceClass2013} require spatial context which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class.}
 
-From CC:
-Class characteristics, as defined in Section 1.2, are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes. A sufficiently well-defined set of features can separate shoes into make and model categories (Gross et al., 2013). Gross et al. (2013) define geometric features such as circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. Working from these categories, a set of categories were assembled that is more suited to recognition by convolutional neural networks, as some of the definitions used in Gross et al. (2013) require spatial context which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). Table 2.1 shows three examples of each class.
+\mt{
+\begin{description}
+\item [Bowtie] Bowtie shapes are roughly quadrilateral, with two opposite concave faces. The remaining two faces can be convex or straight, and the concave faces may have straight portions, so long as there is a concave region. Using this definition, shapes such as butterflies are included as bowties.
+\item [Chevron] Chevron shapes include repeating parallel lines as well as individual ``v" shapes. They may be angular but can also be curved.
+\item [Circle] Circles include ellipses and ovals; they must be round.
+\item [Line] Lines are repeated and parallel; a more general definition of a line would be difficult to differentiate from many other patterns. Lines can be mildly curved.
+\item [Polygon] Polygons are defined in this standard to have more than 4 sides. They include pentagons, hexagons, and octagons.
+\item [Quadrilateral] Quadrilaterals (quads) have four sides. They may have rounded or square corners.
+\item [Star] Stars are any shape with alternating concave and convex regions, or lines which emanate from a central point. ``X" and ``+" shapes are also classified as stars.
+\item [Text] Text is any shape which would be identified as text by a reasonable human. In most cases, the text on the outsole images used is made up of Latin alphabet characters; the model will likely not recognize text in other scripts (but could be trained if non-Latin text images could be obtained).
+\item [Triangle] Triangles are any three-sided figure. Like quadrilaterals, they can have rounded corners. In some cases, it is difficult to distinguish between a trapezoidal shape and a triangle when rounded corners are involved.
+\item [Other] Other features which were marked include logos, various textures (including crepe, stippling, etc.), and smooth regions with no discernible features. These regions are grouped and provide additional information---that none of the previous nine categories are present.
+\end{description}
+}
 
-% \begin{table}
-% \centering
-%
-% \setlength\tabcolsep{1mm}
-% \begin{tabular}{rccl}
-%      Bowtie & \raisebox{-.5\height}{\includegraphics[width=.3\textwidth]{class_examples/bowtie_examples.png}} &
-%      \raisebox{-.5\height}{\includegraphics[width=.3\textwidth]{class_examples/chevron_examples.png}} & Chevron \vspace{1mm}\\
-%      Circle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/circle_examples.png}} &
-%      \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/line_examples.png}} & Line  \vspace{1mm}\\
-%      Polygon & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/polygon_examples.png}} &
-%      \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/quad_examples.png}} & Quad  \vspace{1mm}\\
-%      Star & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/star_examples.png}} &
-%      \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/text_examples.png}} & Text  \vspace{1mm}\\
-%      Triangle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/triangle_examples.png}} &
-%       \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{class_examples/other_examples.png}} & Other \\
-% \end{tabular}
-% \caption[Geometric elements used to classify tread patterns.]{A set of geometric elements used to classify tread patterns. Categories modified from \cite{grossVariabilitySignificanceClass2013}.}\label{tab:class-char-examples}
-% \end{table}
+\begin{table}
+\centering
 
+\setlength\tabcolsep{1mm}
+\begin{tabular}{rccl}
+     Bowtie & \raisebox{-.5\height}{\includegraphics[width=.3\textwidth]{images/class_examples/bowtie_examples.png}} &
+     \raisebox{-.5\height}{\includegraphics[width=.3\textwidth]{images/class_examples/chevron_examples.png}} & Chevron \vspace{1mm}\\
+     Circle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/circle_examples.png}} &
+     \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/line_examples.png}} & Line  \vspace{1mm}\\
+     Polygon & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/polygon_examples.png}} &
+     \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/quad_examples.png}} & Quad  \vspace{1mm}\\
+     Star & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/star_examples.png}} &
+     \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/text_examples.png}} & Text  \vspace{1mm}\\
+     Triangle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/triangle_examples.png}} &
+      \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/other_examples.png}} & Other \\
+\end{tabular}
+\caption[Geometric elements used to classify tread patterns.]{A set of geometric elements used to classify tread patterns. Categories modified from \cite{grossVariabilitySignificanceClass2013}.}\label{tab:class-char-examples}
+\end{table}
 
+\mt{Thousands of outsole images were scraped online shoe retail sites. These images were then uploaded for use in a tool called LabelMe (Russell et al., 2008), a labeling/annotating interface which allows users to easily select and label regions of an image. Over the course of six months, multiple students worked to label images of shoes according to the classification scheme using LabelMe.
 
-\svp{Discuss LabelMe and the annotation process. Multiple students working over the course of 6 months... etc.}
-
-\mt{\begin{itemize}
-\item Mention that they're high school and/or undergrad lackeys? (Jk, students)
-\item Number of shoe images, number of labels
-\item Bar chart?
-\end{itemize}}
+After annotation using the LabelMe software package, images are processed by an R script that identifies the minimum bounding rectangle of the region, crops the image to that region, and scales the cropped area to a 256 x 256 pixel image suitable for analysis by the convolutional neural network. During this process, aspect ratio is not preserved, though efforts are made to label regions
+which are relatively square to minimize the effect of this distortion. To date, 4371 shoes have been labeled, yielding 27135 multi-label images.}
 
 \begin{figure}[hbt]
 \centering
@@ -162,16 +171,37 @@ Class characteristics, as defined in Section 1.2, are characteristics which can 
   \caption{An example of labeling images with LabelMe}
 \end{figure}
 
+<<class-characteristic-barchart, eval = F, fig.width = 6, fig.height = 4, dpi = 300, fig.cap = "Distribution of classes in all labeled images. Quadrilaterals, lines, circles, text, and chevrons are relatively common; stars, polygons, and bowties are relatively rare.", fig.scap = "Distribution of classes in all labeled images.">>=
+annotated_imgs %>%
+  mutate(label_type = str_replace(label_type, "multi", "multiple")) %>%
+  mutate(labels = str_to_title(labels)) %>%
+  mutate(labels = factor(labels, levels = c("Quad", "Line", "Text", "Circle",
+                                            "Chevron", "Triangle", "Polygon",
+                                            "Star", "Bowtie", "Other"))) %>%
+  ggplot() +
+  geom_bar(aes(x = labels, fill = label_type), color = "black") +
+  scale_fill_manual("Labels", values = c("single" = "#6ba2b9",
+                                         "multiple" = "#2e5597")) +
+  coord_flip() +
+  ylab("# Labeled Images") +
+  xlab("")  +
+  ggtitle("Current Class Distribution (All Labeled Images)") +
+  mytheme +
+  theme(legend.position = c(1, 1),
+        legend.justification = c(1.03, 1.03),
+        legend.background = element_rect(fill = "white"))
+@
 
 \svp{It might be good to add in some (new) statistics relating brand information to common geometric features in tread - show, for instance, the top N brands with bowties vs. the top N brands with polygons. }
 
-
-Nine geometric class characteristics were chosen: Circle, ..., and Text. Thousands of outsole images were scraped online shoe retail sites. These images were then uploaded for use in a tool called LabelMe (Russell et al., 2008), a labeling/annotating interface which allows users to easily select and label regions of an image. To date, 4371 shoes have been labeled, yielding 27135 multi-label images.
-
-
+\mt{Augmentation? Model training parameters?}
 
 \section{Results}
 \paragraph{Overall Accuracy} % Model-wise and class-by-class, w/ confusion matrix
+
+\fix{Are we setting up this paper to generate images live, or pasting in static versions?}
+
+\mt{Figure 3.2 shows the ROC curve for the full model, and Figure 3.3 shows the curve for each class. The full model has an AUC of 0.88, and the AUC for individual classes ranges from 0.81 (for line) to 0.91 (for bowtie and text). While the class performances do vary slightly, each ROC curve is the same general shape and performs significantly better than random chance.}
 
 \paragraph{Model Diagnostics}
 
