@@ -46,7 +46,47 @@
 
 <<setup, include = F>>=
 knitr::opts_chunk$set(echo = F, dev = "pdf", dpi = 1000)
+
+library(tidyverse)
+library(magrittr)
+library(tidyverse)
+library(ggplot2)
+library(keras)
+
+mytheme <- theme_bw()
+theme_set(mytheme)
 @
+
+<<results_setup, include = F>>=
+if("paper" %in% list.files()) {
+  wd <- file.path(getwd(), "paper")
+} else {
+  wd <- getwd()
+}
+
+codedir <- file.path(wd, "code")
+modeldir <- file.path(wd, "model")
+
+source(file.path(codedir, "Generate_Model_Images.R"))
+@
+
+<<labeled-data-setup, include = F>>=
+model_path <- file.path(modeldir, "TrainedModels")
+
+newest_model <- get_newest(dir = model_path, pattern = "weights.h5")
+newest_data_file <- file.path(modeldir, "RProcessedImages",
+                              newest_model$process_dir, "cropped_photos.Rdata")
+
+load(newest_data_file)
+source(file.path(codedir, "count_images.R"))
+@
+
+<<load-keras-model, include = F, eval = T, echo = F>>=
+model_dir <- newest_model$path
+load(list.files(model_dir, pattern = "-history.Rdata", full.names = T)[1])
+load(file.path(get_newest()$path, get_newest(pattern = "\\d.Rdata")$base_file))
+@
+
 
 \begin{document}
 
@@ -166,7 +206,7 @@ The categories we use in this study are operationally defined as follows:
   \caption{An example of labeling images with LabelMe}
 \end{figure}
 
-<<class-characteristic-barchart, eval = F, fig.width = 6, fig.height = 4, dpi = 300, fig.cap = "Distribution of classes in all labeled images. Quadrilaterals, lines, circles, text, and chevrons are relatively common; stars, polygons, and bowties are relatively rare.", fig.scap = "Distribution of classes in all labeled images.">>=
+<<class-characteristic-barchart, fig.width = 6, fig.height = 4, dpi = 300, fig.cap = "Distribution of classes in all labeled images. Quadrilaterals, lines, circles, text, and chevrons are relatively common; stars, polygons, and bowties are relatively rare.", fig.scap = "Distribution of classes in all labeled images.">>=
 annotated_imgs %>%
   mutate(label_type = str_replace(label_type, "multi", "multiple")) %>%
   mutate(labels = str_to_title(labels)) %>%
