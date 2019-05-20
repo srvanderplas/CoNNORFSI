@@ -150,7 +150,7 @@ Developed by Oxford's Visual Graphics Group, VGG16 is a CNN with 16 ``functional
 \caption[VGG16 structure]{VGG16 consists of five convolutional blocks that make up the model base. Each convolutional block contains an increasing number of increasingly complex features. After the convolutional blocks, the fully connected layers of the model head are used to make global connections between separate features.}\label{fig:VGG16-structure}
 \end{figure}
 
-<<vgg16layers, fig.width = 7, fig.height = 5.75>>=
+<<vgg16layers, fig.width = 7, fig.height = 5.75, fig.cap = "A selection of filters from the convolutional layers of VGG16.">>=
 imgs <- list.files("./images/vgg16layers/", recursive = T, full.names = T)
 pngs <- lapply(imgs, function(x) png::readPNG(x)[46:1596, 32:1582, ])
 grobs <- lapply(pngs, grid::rasterGrob)
@@ -159,12 +159,9 @@ gridExtra::grid.arrange(grobs = grobs, nrow = 5)
 
 In order to train a new head for the VGG16 model base, human-labeled images are necessary. The next section describes how these images were produced and used to fit our custom classifier.
 
-\paragraph{Annotated Training Data}
+\paragraph{Annotated Training Data
 
-% \svp{Start with classification scheme. Mention that it was developed in consultation with experts as well as based on past papers and classification schemes.}
-% \mt{I don't know much about the consultation with experts...}
-
-Class characteristics are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes \svp{(e.g. all shoes of a specific brand and size)}. A sufficiently well-defined set of features can be used to separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}; the set of features used in that study included circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. After consulting with practitioners, we developed a set of categories suitable for automatic recognition by convolutional neural networks. These modifications were necessary because some of the definitions used in \citet{grossVariabilitySignificanceClass2013} require contextual spatial information which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class.}
+Class characteristics are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes (e.g., all shoes of a specific brand and size). A sufficiently well-defined set of features can be used to separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}; the set of features used in that study included circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. After consulting with practitioners, we developed a set of categories suitable for automatic recognition by convolutional neural networks. These modifications were necessary because some of the definitions used in \citet{grossVariabilitySignificanceClass2013} require contextual spatial information which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class.}
 
 The categories we use in this study are operationally defined as follows:
 \begin{description}
@@ -198,7 +195,7 @@ The categories we use in this study are operationally defined as follows:
 \caption[Geometric elements used to classify tread patterns.]{A set of geometric elements used to classify tread patterns. Categories modified from \cite{grossVariabilitySignificanceClass2013}.}\label{tab:class-char-examples}
 \end{table}
 
-\mt{Thousands of outsole images were scraped online shoe retail sites} \svp{and annotated using LabelMe, a tool for image annotation in computer vision problems\citep{labelme}}. After annotation, images are processed by an R script that identifies the minimum bounding rectangle of the region, crops the image to that region, and scales the cropped area to a 256 x 256 pixel image suitable for analysis by the convolutional neural network. During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, 4371 shoes have been labeled, yielding 27135 multi-label images.}\fix{actual counts}
+Thousands of outsole images were scraped from online shoe retail sites and annotated using LabelMe, a tool for image annotation in computer vision problems \citep{labelme}. After annotation, images are processed by an R script that identifies the minimum bounding rectangle of the region, crops the image to that region, and scales the cropped area to a 256 x 256 pixel image suitable for analysis by the convolutional neural network. During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
 
 \begin{figure}[hbt]
 \centering
@@ -234,8 +231,6 @@ annotated_imgs %>%
 \section{Results}
 \paragraph{Overall Accuracy} % Model-wise and class-by-class, w/ confusion matrix
 
-\fix{Are we setting up this paper to generate images live, or pasting in static versions?}
-
 \mt{Figure 3.2 shows the ROC curve for the full model, and Figure 3.3 shows the curve for each class. The full model has an AUC of 0.88, and the AUC for individual classes ranges from 0.81 (for line) to 0.91 (for bowtie and text). While the class performances do vary slightly, each ROC curve is the same general shape and performs significantly better than random chance.}
 
 \paragraph{Model Diagnostics}
@@ -243,9 +238,6 @@ annotated_imgs %>%
 \section{Conclusions}
 
 \section{Future Work}
-
-
-\section*{References}
 
 \bibliography{mybibfile}
 
