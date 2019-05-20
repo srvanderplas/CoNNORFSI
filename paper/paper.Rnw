@@ -58,7 +58,7 @@ theme_set(mytheme)
 @
 
 <<results_setup, include = F>>=
-if("paper" %in% list.files()) {
+if ("paper" %in% list.files()) {
   wd <- file.path(getwd(), "paper")
 } else {
   wd <- getwd()
@@ -164,7 +164,7 @@ In order to train a new head for the VGG16 model base, human-labeled images are 
 % \svp{Start with classification scheme. Mention that it was developed in consultation with experts as well as based on past papers and classification schemes.}
 % \mt{I don't know much about the consultation with experts...}
 
-Class characteristics are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes \svp{(e.g. all shoes of a specific brand and size)}. A sufficiently well-defined set of features can be used to separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}; the set of features used in that study included circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. After consulting with practitioners, we developed a set of categories suitable for automatic recognition by convolutional neural networks. These modifications were necessary because some of the definitions used in \citet{grossVariabilitySignificanceClass2013} require contextual spatial information which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class.}
+Class characteristics are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes \svp{(e.g. all shoes of a specific brand and size)}. A sufficiently well-defined set of features can be used to separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}; the set of features used in that study included circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. After consulting with practitioners, we developed a set of categories suitable for automatic recognition by convolutional neural networks. These modifications were necessary because some of the definitions used in \citet{grossVariabilitySignificanceClass2013} require contextual spatial information which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class.
 
 The categories we use in this study are operationally defined as follows:
 \begin{description}
@@ -198,7 +198,7 @@ The categories we use in this study are operationally defined as follows:
 \caption[Geometric elements used to classify tread patterns.]{A set of geometric elements used to classify tread patterns. Categories modified from \cite{grossVariabilitySignificanceClass2013}.}\label{tab:class-char-examples}
 \end{table}
 
-\mt{Thousands of outsole images were scraped online shoe retail sites} \svp{and annotated using LabelMe, a tool for image annotation in computer vision problems\citep{labelme}}. After annotation, images are processed by an R script that identifies the minimum bounding rectangle of the region, crops the image to that region, and scales the cropped area to a 256 x 256 pixel image suitable for analysis by the convolutional neural network. During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, 4371 shoes have been labeled, yielding 27135 multi-label images.}\fix{actual counts}
+\mt{Thousands of outsole images were scraped online shoe retail sites} \svp{and annotated using LabelMe, a tool for image annotation in computer vision problems\citep{labelme}}. \mt{After annotation, images are processed by an R script that identifies the minimum bounding rectangle of the region, crops the image to that region, and scales the cropped area to a 256 x 256 pixel image suitable for analysis by the convolutional neural network. During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, 4371 shoes have been labeled, yielding 27135 multi-label images.}\fix{actual counts}
 
 \begin{figure}[hbt]
 \centering
