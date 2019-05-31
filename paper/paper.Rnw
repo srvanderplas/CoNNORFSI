@@ -45,7 +45,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 <<setup, include = F>>=
-knitr::opts_chunk$set(echo = F, dev = "pdf", dpi = 1000)
+knitr::opts_chunk$set(echo = F, dev = "pdf", dpi = 1000, message = F, warning = F, fig.align = "center")
 
 library(tidyverse)
 library(magrittr)
@@ -117,7 +117,7 @@ This template helps you to create a properly formatted \LaTeX\ manuscript.
 \end{abstract}
 
 \begin{keyword}
-footwear,class characteristics,computer vision, neural networks
+footwear, class characteristics, computer vision, neural networks
 \end{keyword}
 
 \end{frontmatter}
@@ -135,7 +135,8 @@ In this paper, we discuss an alternate approach that uses an additional model la
 \paragraph{Transfer Learning}
 Neural networks are composed of sets of layers; the early layers, which are called the model base, contain feature detectors, and the final layers make up the classifier, or model head, which connects meaningful features to classification labels. A relatively simple convolutional neural network which processes image data may contain more than 14 million parameters in the model base and an additional 120 million parameters in the model head; to train a model of this nature requires millions of labeled images and a significant amount of computational power. Assembling data to train a network from scratch is often a nearly impossible task; the process of \emph{transfer learning} is a natural solution to this common problem. Transfer learning leverages the modularity of neural networks, that is, that the model base can be separated from the classifier which produces predictions.
 
-Many convolutional neural networks have been trained on a set of images known as ImageNet; these images are hierarchically labeled, so the same image of a dog may have labels of sky, grass, and trees, and the dog may be labeled as ``mammal'', ``dog'', ``retriever'', and ``golden retriever'' at increasing levels of label complexity \citep{dengImageNetLargeScaleHierarchical}. CNNs trained on ImageNet are optimized for general human-like vision, that is, the ability to recognize a large set of different features simultaneously. As a result, the base of networks trained on these sets are often used for transfer learning, because the initial layers are broadly generalizable to a wide variety of more specific image labeling tasks. \fix{add a few VGG16 filters here to demonstrate the generic filters in layers 1-4} \mt{All of them? Four per block?}
+Many convolutional neural networks have been trained on a set of images known as ImageNet; these images are hierarchically labeled, so the same image of a dog may have labels of sky, grass, and trees, and the dog may be labeled as ``mammal'', ``dog'', ``retriever'', and ``golden retriever'' at increasing levels of label complexity \citep{dengImageNetLargeScaleHierarchical}. CNNs trained on ImageNet are optimized for general human-like vision, that is, the ability to recognize a large set of different features simultaneously. As a result, the base of networks trained on these sets are often used for transfer learning, because the initial layers are broadly generalizable to a wide variety of more specific image labeling tasks.
+\autoref{fig:vgg16layers} \fix{shows a selection of filters from VGG16, where each filter detects the presence of specific shapes or colors. Filters in earlier convolutional blocks detect simple features, such as colors and blobs, while later filters detect more complex combinations of features. Thus, a single image is made up of some combination of the hundreds of features that are detected by the filters in a CNN.}
 
 Transfer learning in neural network contexts involves freezing the weights of the pre-trained model base taken from a network trained on a more general set of images, so that during the training process, only the weights of the newly-added classifier are updated \citep{oquabLearningTransferringMidlevel2014}. In many cases, the entire model base is used, and fitted with a new model head; the modularity of CNNs makes this process relatively simple, and allows researchers to leverage pre-trained networks when working with diffierent sets of image data. Transfer learning allows CNNs to be applied to smaller datasets of several thousand images, reduces the amount of computational time required to fit the model, and provides boosted performance compared to training a new model from scratch \citep{yosinskiHowTransferableAre2014}. It has been successfully applied in automatic classification of medical images \citep{shinDeepConvolutionalNeural2016} as well as in various applications of shoe forensics \citep{kongCrossDomainForensicShoeprint2017,kongCrossDomainImageMatching2019a,zhangAdaptingConvolutionalNeural2017}.
 
@@ -165,7 +166,7 @@ Class characteristics are characteristics which can be used to exclude shoes fro
 
 The categories we use in this study are operationally defined as follows:
 \begin{description}
-\item [Bowtie] Bowtie shapes are roughly quadrilateral, with two opposite concave faces. The remaining two faces can be convex or straight, and the concave faces may have straight portions, so long as there is a concave region. Using this definition, shapes such as butterflies are included as bowties. \svp{I'm still on the fence - we can just not mention this, or we could move butterflies to "star"...}
+\item [Bowtie] Bowtie shapes are roughly quadrilateral, with two opposite concave faces. The remaining two faces can be convex or straight, and the concave faces may have straight portions, so long as there is a concave region. Using this definition, shapes such as butterflies are included as bowties. \svp{I'm still on the fence - we can just not mention this, or we could move butterflies to "star"...} \mt{I think it makes a lot of sense to move them to star. That means redoing the poster/slides examples though... grrrrrr}
 \item [Chevron] Chevron shapes include repeating parallel lines as well as individual ``v" shapes. They may be angular but can also be curved.
 \item [Circle] Circles include ellipses and ovals; they must be round.
 \item [Line] Lines are repeated and parallel; a more general definition of a line would be difficult to differentiate from many other patterns. Lines can be mildly curved.
@@ -226,33 +227,134 @@ annotated_imgs %>%
 
 \svp{It might be good to add in some (new) statistics relating brand information to common geometric features in tread - show, for instance, the top N brands with bowties vs. the top N brands with polygons. }
 
-\mt{Labeled images are scarce relative to the amount of data necessary to train a neural network. One solution to this scarcity is to artificially enlarge the data set using a process called image augmentation \citep{krizhevskyImageNetClassificationDeep2012}. Augmentation is the transformation of original input data using image operations such as cropping, zoom, skew, rotation, and color balance modification in order to distort or alter the image while maintaining the essential features corresponding to the label. This process reduces the potential for overfitting the model to the specific set of image data used during the training process, and also increases the amount of data available for training; examples of pre- and post-augmentation images are shown in \autoref{fig:augmented}.}
+Labeled images are scarce relative to the amount of data necessary to train a neural network. One solution to this scarcity is to artificially enlarge the data set using a process called image augmentation \citep{krizhevskyImageNetClassificationDeep2012}. Augmentation is the transformation of original input data using image operations such as cropping, zoom, skew, rotation, and color balance modification in order to distort or alter the image while maintaining the essential features corresponding to the label. This process reduces the potential for overfitting the model to the specific set of image data used during the training process, and also increases the amount of data available for training; examples of pre- and post-augmentation images are shown in \autoref{fig:augmented}.
 
 \begin{figure}
 \centering
-\includegraphics[width=.1\textwidth]{augmentation/bowtie(R)-1-ugg-sienna-enamel-blue_product_8726365_color_120557.jpg}\hfill
-\includegraphics[width=.1\textwidth]{augmentation/aug_bowtie(R)-1-ugg-sienna-enamel-blue_product_8726365_color_120557_0_8344.jpg}\hfill\hfill\hfill
-\includegraphics[width=.1\textwidth]{augmentation/quad-2-nike-kids-downshifter-7-infant-toddler-gunsmoke-sunset-pulse-atmosphere-grey_product_8800875_color_720973.jpg}\hfill
-\includegraphics[width=.1\textwidth]{augmentation/aug_quad-2-nike-kids-downshifter-7-infant-toddler-gunsmoke-sunset-pulse-atmosphere-grey_product_8800875_color_720973_0_7533.jpg}\hfill\hfill\hfill
-\includegraphics[width=.1\textwidth]{augmentation/quad-2-puma-suede-classic-x-mac-three-port-royale-port-royale_product_9123838_color_251426.jpg}\hfill
-\includegraphics[width=.1\textwidth]{augmentation/aug_quad-2-puma-suede-classic-x-mac-three-port-royale-port-royale_product_9123838_color_251426_0_5689.jpg}\hfill\hfill\hfill
-\includegraphics[width=.1\textwidth]{augmentation/text-1-bernie-mev-kids-catwalk-little-kid-big-kid-multi-camo_product_9084647_color_87089.jpg}\hfill
-\includegraphics[width=.1\textwidth]{augmentation/aug_text-1-bernie-mev-kids-catwalk-little-kid-big-kid-multi-camo_product_9084647_color_87089_0_1891.jpg}
+\includegraphics[width=.1\textwidth]{images/augmentation/bowtie(R)-1-ugg-sienna-enamel-blue_product_8726365_color_120557.jpg}\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/aug_bowtie(R)-1-ugg-sienna-enamel-blue_product_8726365_color_120557_0_8344.jpg}\hfill\hfill\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/quad-2-nike-kids-downshifter-7-infant-toddler-gunsmoke-sunset-pulse-atmosphere-grey_product_8800875_color_720973.jpg}\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/aug_quad-2-nike-kids-downshifter-7-infant-toddler-gunsmoke-sunset-pulse-atmosphere-grey_product_8800875_color_720973_0_7533.jpg}\hfill\hfill\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/quad-2-puma-suede-classic-x-mac-three-port-royale-port-royale_product_9123838_color_251426.jpg}\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/aug_quad-2-puma-suede-classic-x-mac-three-port-royale-port-royale_product_9123838_color_251426_0_5689.jpg}\hfill\hfill\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/text-1-bernie-mev-kids-catwalk-little-kid-big-kid-multi-camo_product_9084647_color_87089.jpg}\hfill
+\includegraphics[width=.1\textwidth]{images/augmentation/aug_text-1-bernie-mev-kids-catwalk-little-kid-big-kid-multi-camo_product_9084647_color_87089_0_1891.jpg}
 \caption[Original and augmented images.]{Four sets of original (left) and augmented (right) labeled images.}\label{fig:augmented}
 \end{figure}
 
-Model training is analogous to the human learning process. A child learns to identify dogs by being presented with many labeled examples, where the parent uses the label "dog" for an animal walking by. That child's understanding of dogs is then measured by how many dogs the child is able to correctly identify, and also by the number of cats it mistakenly calls "dog". Similarly, CNN training is a series of stages where, in each, the model learns from a set of labeled training data and that learning is  evaluated through intermediate predictions of validation data.
+\mt{Model training is analogous to the human learning process. For example, a child learns to identify dogs by being presented with many labeled examples, such as when their parent uses the label ``dog" for an animal walking by. That child's understanding of dogs is then measured by how many dogs the child is able to correctly identify, and also by the number of cats it mistakenly calls ``dog". Similarly, CNN training is a series of stages, or ``epochs", where the model learns from the set of labeled training data, and that learning is measured through intermediate predictions of validation data.}
 
 The \Sexpr{nrow(dfunion)} images were split such that 60\% were used for training. Since the categories do not exist in equal proportion in the labeled data, the training data were weighted by proportion during the training process to prevent the loss function from being overwhelmed by more frequent categories. Of the remaining 40\% of data, half were used for validation, to monitor the training process, and the remaining data were for testing the performance of the fitted model.
 
-
-
-
-
 \section{Results}
-\paragraph{Overall Accuracy} % Model-wise and class-by-class, w/ confusion matrix
 
-\mt{Figure 3.2 shows the ROC curve for the full model, and Figure 3.3 shows the curve for each class. The full model has an AUC of 0.88, and the AUC for individual classes ranges from 0.81 (for line) to 0.91 (for bowtie and text). While the class performances do vary slightly, each ROC curve is the same general shape and performs significantly better than random chance.}
+\subsection{Model Training}
+<<training-accuracy, fig.width = 7.5, fig.height = 5, out.width = ".75\\textwidth", fig.cap = "Training and validation accuracy and loss for each epoch of the fitting process. Training and validation accuracy reach 89.5\\% around epoch 9. After that point, validation loss remains the same and training loss decreases slightly, while validation accuracy increases more slowly than training accuracy.", fig.scap = "Training and validation accuracy and loss during each epoch.", fig.pos = 'h'>>=
+data.frame(history$metrics) %>%
+  mutate(epoch = 1:n()) %>%
+  gather(key = "measure", value = "value", -epoch) %>%
+  mutate(Type = ifelse(str_detect(measure, "val"), "Validation", "Training"),
+         measure = ifelse(str_detect(measure, "acc"), "Accuracy", "Loss")) %>%
+  # bind_rows(tibble(epoch = NA, value =  .6, measure = "Accuracy", Type = "Validation")) %>%
+  # bind_rows(tibble(epoch = NA, value =  .33, measure = "Loss", Type = "Validation")) %>%
+  ggplot(aes(x = epoch, y = value, color = Type)) +
+  geom_point() +
+  geom_smooth(se = F) +
+  facet_grid(measure~., scales = "free_y", switch = "both") +
+  theme_bw() +
+  scale_y_continuous("") +
+  scale_x_continuous("Epoch") +
+  ggtitle("CoNNOR Training Performance") + mytheme +
+  theme(axis.title.y = element_blank(), legend.position = c(1, .5),
+        legend.justification = c(1.03, -0.05),
+        legend.background = element_rect(fill = "white"))
+@
+
+\autoref{fig:training-accuracy} shows the training and validation accuracy and loss at each epoch of the fitting process. Overfitting, or fitting a model which performs too well on the training data relative to the validation data, is seen when the validation loss starts to increase after reaching a global minimum. Alternately, underfitting occurs when the validation accuracy is still increasing when model optimization is terminated. Neither of these outcomes appears in \autoref{fig:training-accuracy}, indicating that the model optimization process was halted at an appropriate epoch.
+
+\FloatBarrier
+
+\subsection{Model Accuracy}\label{sec:model-accuracy}
+
+\paragraph{Overall Accuracy} % Model-wise and class-by-class, w/ confusion matrix
+\autoref{fig:roc-code} shows the ROC curve for the full model, and \autoref{fig:auc-code} shows the curve for each class. The full model has an AUC of 0.88, and the AUC for individual classes ranges from 0.81 (for line) to 0.91 (for bowtie and text). While the class performances do vary slightly, each ROC curve is the same general shape and performs significantly better than random chance.
+
+<<roc-code, fig.width = 5, fig.height = 5, out.width = ".5\\textwidth", fig.cap = "ROC curve showing overall model performance.", fig.scap = "Overall model performance ROC curve.">>=
+library(pROC)
+pred_df <- as_tibble(preds) %>% gather(key = feature, value = value)
+test_labs_df <- as_tibble(test_labs) %>% gather(key = feature, value = value)
+whole_model_roc <- roc(test_labs_df$value, pred_df$value)
+
+whole_model_roc_df <- tibble(tpr = whole_model_roc$sensitivities,
+                             fpr = 1 - whole_model_roc$specificities,
+                             thresholds = whole_model_roc$thresholds,
+                             auc = whole_model_roc$auc[1]) %>%
+  nest(tpr, fpr, thresholds, .key =  "roc_plot") %>%
+  mutate(eer = purrr::map(roc_plot, eer))
+ggplot() +
+  geom_line(aes(x = fpr, y = tpr), data = unnest(whole_model_roc_df, roc_plot), size = 1.25) +
+  geom_label(aes(x = 1, y = .07, label = sprintf("AUC: %0.2f", auc)), hjust = 1, vjust = -0.2, data = whole_model_roc_df) +
+  geom_point(aes(x = fpr, y = tpr, color = "Equal Error Rate"), data = unnest(whole_model_roc_df, eer), size = 2) +
+  scale_color_manual("", values = "black") +
+  scale_x_continuous("False Positive Rate", breaks = c(0, .25, .5, .75, 1), labels = c("0.0", "", "0.5", "", "1.0")) +
+  scale_y_continuous("True Positive Rate", breaks = c(0, .25, .5, .75, 1), labels = c("0.0", "", "0.5", "", "1.0")) +
+  ggtitle("CoNNOR Test Set Performance (All Classes)") +
+  coord_fixed() + mytheme +
+  theme(legend.position = c(1, 0), legend.justification = c(1.01, -0.01), legend.title = element_blank(), legend.background = element_rect(fill = "white"))
+
+@
+
+<<auc-code, fig.width = 8, fig.height = 6, out.width = "\\textwidth", fig.cap = "Class-by-class ROC curves. AUC is area under the curve, a measure of overall model performance. Equal error rates are marked, indicating the position at which there is equal probability of a false positive or false negative error.", fig.scap = "Class-by-class ROC curves.">>=
+aucs <- plot_onehot_roc(preds, test_labs, str_to_title(classes))
+thresholds <- purrr::map_dbl(aucs$data$eer, ~.$thresholds)
+aucs$data$thresholds <- thresholds
+
+ggplot() +
+  geom_line(aes(x = fpr, y = tpr), data = unnest(aucs$data, roc_plot), size = 1.25) +
+  geom_label(aes(x = 1, y = 0, label = sprintf("AUC: %0.2f\nEER: %0.2f", auc, thresholds)), hjust = 1, vjust = -0.02, data = aucs$data) +
+  geom_point(aes(x = fpr, y = tpr, color = "Equal Error\nRate (EER)"), data = unnest(aucs$data, eer), size = 2.5) +
+  scale_color_manual("", values = "black") +
+  facet_wrap(~class) +
+  scale_x_continuous("False Positive Rate", breaks = c(0, .25, .5, .75, 1), labels = c("0.0", "", "0.5", "", "1.0")) +
+  scale_y_continuous("True Positive Rate", breaks = c(0, .25, .5, .75, 1), labels = c("0.0", "", "0.5", "", "1.0")) +
+  ggtitle("CoNNOR Test Set Performance") +
+  facet_wrap(~class, nrow = 2) +
+  coord_fixed() +
+  theme(legend.position = c(1, 0), legend.justification = c(1, 0))
+@
+
+\FloatBarrier
+
+As discussed in Section~\ref{sec:model-eval}, a confusion matrix is a cross-tabulation of the labels assigned to an image and the labels predicted by the model. In a single-label problem, an image belongs to only one category and the model predicts only one label, so applying the wrong label is equivalent to failing to apply the correct label. Thus, every possible combination of true label and applied prediction is represented in the two-dimensional/traditional confusion matrix. Extending the confusion matrix to more complex problems requires additional considerations.
+
+Although some efforts to generalize confusion matrices to multi-class problems do exist in the literature \citep{landgrebeEfficientMulticlassROC2008}, it appears that confusion matrices have not previously been applied to multi-label classification problems. Since a single image may belong to a combination of the $n$ categories, it is no longer true that a false positive and a false negative are equivalent (see \autoref{tab:error-3class-problem}). The confusion matrix presented in \autoref{fig:confusion_matrix} is like a traditional confusion matrix in that all values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values, however, are adjusted from the traditional method to remove the effect of any true positives from the calculation of false positive proportions. For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any image that truly contains both triangles and quadrilaterals is removed before calculating the proportion of false quadrilateral labels.
+
+
+<<confusion_matrix, fig.width = 9, fig.height = 8, out.width = "\\textwidth", fig.cap = "Confusion matrix, showing on the diagonal the correct classification rate and on the off-diagonal, classification errors. Note that in multi-label images, correct off-diagonal labels have been excluded from the calculation of false positives.", fig.scap = "Confusion matrix, with correct and incorrect model classifications.", dpi = 600>>=
+get_confusion_matrix(predictions = preds, classes = classes,
+                     test_labels = test_labs, threshold = thresholds) %>%
+  set_names(str_to_title(classes)) %>%
+  ggcorrplot(., hc.order = F, outline.col = "white", lab = T) +
+  scale_fill_gradient("Classification\nRate", low = "white",
+                      high = "cornflowerblue", limits = c(0, 1)) +
+  scale_x_discrete("Image Label") + scale_y_discrete("Prediction") +
+  theme(axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14, angle = 90, vjust = 1)) +
+  ggtitle("CoNNOR Multi-Class Confusion Matrix: Test Set Performance") +
+  theme_bw() +
+  theme(panel.grid.major = element_line(color = "grey50"),
+        panel.grid.minor = element_line(color = "grey60")) +
+  theme(plot.margin = grid::unit(c(0,0,0,0), "mm"),
+        plot.background = element_rect(fill = "transparent", color = NA),
+        plot.subtitle = element_blank(), plot.caption = element_blank(),
+        panel.spacing = unit(c(0, 0, 0, 0), "mm"))
+@
+
+This modified confusion matrix preserves the ability to identify patterns in over- and under-predictions; for instance, the horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are overrepresented, as they are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles are often underpredicted relative to the images which actually contain these categories since they produce a large number of false positive predictions into other categories, as evidenced by the vertical bands.
+
+Another interesting artifact in \autoref{fig:confusion_matrix} is that circles are often misclassified as text, and text is often mislabeled as containing circles. Not all of the images used in model training are accurately labeled: in some cases, the labels have not been updated after labeling guidelines have changed. The confusion between text and circles is a natural consequence of the overlap between geometric shapes and components of written text; it is not indicative of a lack of fit as much as a weakness in the classification system used to define the model.
+
+\autoref{fig:confusion_matrix} shows the general weaknesses of the model, but does not necessarily suggest where to look as to \emph{why} the model is not performing appropriately. In Sections~\ref{sec:model-consistency} and \ref{sec:heatmap}, alternative visualizations are used to better understand the weaknesses of the model when applied to actual images used to train, test, and validate the model.
 
 \paragraph{Model Diagnostics}
 
