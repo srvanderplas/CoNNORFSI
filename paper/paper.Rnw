@@ -323,6 +323,8 @@ ggplot() +
   theme(legend.position = c(1, 0), legend.justification = c(1, 0))
 @
 
+\svp{Pros and cons of confusion matrix here? Maybe we just don't show the actual proportions on the graph? I'd like to discuss this more in person.}
+\svp{If we do include the confusion matrix, this section needs to be MUCH more clearly explained for practitioners. Cross-tabulation isn't a common vocab word...}
 
 A confusion matrix is a cross-tabulation of the labels assigned to an image and the labels predicted by the model. In a single-label problem, an image belongs to only one category and the model predicts only one label, so applying the wrong label is equivalent to failing to apply the correct label. Thus, every possible combination of true label and applied prediction is represented in the two-dimensional/traditional confusion matrix. Extending the confusion matrix to more complex problems requires additional considerations.
 
