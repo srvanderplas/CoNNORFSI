@@ -227,6 +227,78 @@ annotated_imgs %>%
 
 \svp{It might be good to add in some (new) statistics relating brand information to common geometric features in tread - show, for instance, the top N brands with bowties vs. the top N brands with polygons. }
 
+<<>>=
+img_names <- dfunion$filename %>% basename() %>% as.vector
+
+labs <- sapply(classes, grepl, x = str_extract(img_names, "^.*?-\\d?-"))
+str <- gsub("^.*?-\\d{0,2}-", "", img_names)
+
+# Extract first, first two, and first three words of string
+brand_1 <- str_extract(str, "^.*?-")
+brand_2 <- str_extract(str, "^.*?-.*?-")
+brand_3 <- str_extract(str, "^.*?-.*?-.*?-")
+
+# These are the beginning of brands that need an extra word extracted
+multi_brands <- c("the", "the-north", "polo", "polo-ralph", "5", "5-11",
+                  "1", "to", "dr", "la", "new", "old", "under",
+                  "steve", "bernie", "cole", "tory",
+                  "harley", "kristin", "eric",
+                  "spring", "chinese", "dirty")
+
+brand <- ifelse(brand_1 %in% paste0(multi_brands, "-"),
+                ifelse(brand_2 %in% paste0(multi_brands, "-"),
+                       brand_3, brand_2),
+                brand_1) %>%
+  gsub(. , pattern = "-", replacement = " ") %>%
+  trimws(., "right"); rm(brand_1, brand_2, brand_3, multi_brands)
+
+df_images <- cbind(tibble(str, brand), labs)
+
+df_shoes <- df_images %>%
+  group_by(str, brand) %>%
+  summarize_at(vars(bowtie:triangle), any)
+
+top_brands <- df_shoes %>%
+  group_by(brand) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n))
+
+df_summ <- filter(df_shoes, brand %in% head(top_brands$brand, 8)) %>%
+  group_by(brand) %>%
+  summarize(n = n(),
+            bowtie = sum(bowtie)/n, chevron = sum(chevron)/n,
+            circle = sum(circle)/n, line = sum(line)/n,
+            polygon = sum(polygon)/n, quad = sum(quad)/n,
+            star = sum(star)/n, text = sum(text)/n, triangle = sum(triangle)/n)
+
+df_summ_long <- df_summ %>%
+  gather(key = shape, value = prop, -brand, -n) %>%
+  arrange(brand)
+
+df_summ_long$brand <- as.factor(df_summ_long$brand)
+df_summ_long$shape <- factor(df_summ_long$shape, levels = classes)
+
+# Line plot
+ggplot(df_summ_long) + geom_point(aes(x = prop, y = shape, color = brand)) +
+  geom_path(aes(x = prop, y = shape, group = brand, color = brand)) +
+  ggtitle("Shape proportions by brand")
+
+# unicode_symbols <- c(bowtie = "\u26FB", chevron = "\uFE3D",
+#                      circle =  "\u23FA", line = "\u2225",
+#                      polygon = "\u2B23", quad = "\u25A0",
+#                      star = "\u2605", text = "a", triangle = "\u25BC",
+#                      other = "\u003F")
+
+ggplot(df_summ_long, aes(x = brand, y = prop, shape = factor(shape),
+                         color = factor(shape))) +
+  geom_point(size = 4) +
+  scale_shape_manual(values = c("\u26FB","\uFE3D","\u23FA","\u2225",
+                                "\u2B23","\u25A0","\u2605","a","\u25BC")) +
+  theme_bw() +
+  coord_flip() +
+  ggtitle("Proportion of labeled shoes containing each shape by brand")
+@
+
 Labeled images are scarce relative to the amount of data necessary to train a neural network. One solution to this scarcity is to artificially enlarge the data set using a process called image augmentation \citep{krizhevskyImageNetClassificationDeep2012}. Augmentation is the transformation of original input data using image operations such as cropping, zoom, skew, rotation, and color balance modification in order to distort or alter the image while maintaining the essential features corresponding to the label. This process reduces the potential for overfitting the model to the specific set of image data used during the training process, and also increases the amount of data available for training; examples of pre- and post-augmentation images are shown in \autoref{fig:augmented}.
 
 \begin{figure}
@@ -277,9 +349,9 @@ data.frame(history$metrics) %>%
 
 \paragraph{Overall Accuracy} % Model-wise and class-by-class, w/ confusion matrix
 \svp{You need to explain these terms. Your CC was written for statisticians, this paper is for practitioners. You need a MUCH gentler introduction to the idea of accuracy, errors, and ROC curves, as well as a lot more definitions for terms.}
-\autoref{fig:roc-code} shows the ROC curve for the full model, and \autoref{fig:auc-code} shows the curve for each class. The full model has an AUC of 0.88, and the AUC for individual classes ranges from 0.81 (for line) to 0.91 (for bowtie and text). While the class performances do vary slightly, each ROC curve is the same general shape and performs significantly better than random chance.
+\autoref{fig:overall-roc} shows the ROC curve for the full model, and \autoref{fig:class-roc} shows the curve for each class. The full model has an AUC of 0.88, and the AUC for individual classes ranges from 0.81 (for line) to 0.91 (for bowtie and text). While the class performances do vary slightly, each ROC curve is the same general shape and performs significantly better than random chance.
 
-<<roc-code, fig.width = 5, fig.height = 5, out.width = ".5\\textwidth", fig.cap = "ROC curve showing overall model performance.", fig.scap = "Overall model performance ROC curve.">>=
+<<overall-roc, fig.width = 5, fig.height = 5, out.width = ".5\\textwidth", fig.cap = "ROC curve showing overall model performance.", fig.scap = "Overall model performance ROC curve.">>=
 library(pROC)
 pred_df <- as_tibble(preds) %>% gather(key = feature, value = value)
 test_labs_df <- as_tibble(test_labs) %>% gather(key = feature, value = value)
@@ -304,7 +376,7 @@ ggplot() +
 
 @
 
-<<auc-code, fig.width = 8, fig.height = 6, out.width = "\\textwidth", fig.cap = "Class-by-class ROC curves. AUC is area under the curve, a measure of overall model performance. Equal error rates are marked, indicating the position at which there is equal probability of a false positive or false negative error.", fig.scap = "Class-by-class ROC curves.">>=
+<<class-roc, fig.width = 8, fig.height = 6, out.width = "\\textwidth", fig.cap = "Class-by-class ROC curves. AUC is area under the curve, a measure of overall model performance. Equal error rates are marked, indicating the position at which there is equal probability of a false positive or false negative error.", fig.scap = "Class-by-class ROC curves.">>=
 aucs <- plot_onehot_roc(preds, test_labs, str_to_title(classes))
 thresholds <- purrr::map_dbl(aucs$data$eer, ~.$thresholds)
 aucs$data$thresholds <- thresholds
@@ -328,8 +400,7 @@ ggplot() +
 
 A confusion matrix is a cross-tabulation of the labels assigned to an image and the labels predicted by the model. In a single-label problem, an image belongs to only one category and the model predicts only one label, so applying the wrong label is equivalent to failing to apply the correct label. Thus, every possible combination of true label and applied prediction is represented in the two-dimensional/traditional confusion matrix. Extending the confusion matrix to more complex problems requires additional considerations.
 
-Although some efforts to generalize confusion matrices to multi-class problems do exist in the literature \citep{landgrebeEfficientMulticlassROC2008}, it appears that confusion matrices have not previously been applied to multi-label classification problems. Since a single image may belong to a combination of the $n$ categories, it is no longer true that a false positive and a false negative are equivalent (see \autoref{tab:error-3class-problem}). The confusion matrix presented in \autoref{fig:confusion_matrix} is like a traditional confusion matrix in that all values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values, however, are adjusted from the traditional method to remove the effect of any true positives from the calculation of false positive proportions. For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any image that truly contains both triangles and quadrilaterals is removed before calculating the proportion of false quadrilateral labels.
-
+Although some efforts to generalize confusion matrices to multi-class problems do exist in the literature \citep{landgrebeEfficientMulticlassROC2008}, it appears that confusion matrices have not previously been applied to multi-label classification problems. Since a single image may belong to a combination of the $n$ categories, it is no longer true that a false positive and a false negative are equivalent. In the confusion matrix presented in \autoref{fig:confusion_matrix}, the values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; however, the values are adjusted to remove the effect of any true positives from the calculation of false positive proportions. For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any image that truly contains both triangles and quadrilaterals is removed before calculating the proportion of false quadrilateral labels.
 
 <<confusion_matrix, fig.width = 9, fig.height = 8, out.width = "\\textwidth", fig.cap = "Confusion matrix, showing on the diagonal the correct classification rate and on the off-diagonal, classification errors. Note that in multi-label images, correct off-diagonal labels have been excluded from the calculation of false positives.", fig.scap = "Confusion matrix, with correct and incorrect model classifications.", dpi = 600>>=
 get_confusion_matrix(predictions = preds, classes = classes,
@@ -355,7 +426,7 @@ This modified confusion matrix preserves the ability to identify patterns in ove
 
 Another interesting artifact in \autoref{fig:confusion_matrix} is that circles are often misclassified as text, and text is often mislabeled as containing circles. Not all of the images used in model training are accurately labeled: in some cases, the labels have not been updated after labeling guidelines have changed. The confusion between text and circles is a natural consequence of the overlap between geometric shapes and components of written text; it is not indicative of a lack of fit as much as a weakness in the classification system used to define the model.
 
-\autoref{fig:confusion_matrix} shows the general weaknesses of the model, but does not necessarily suggest where to look as to \emph{why} the model is not performing appropriately. %In Sections~\ref{sec:model-consistency} and \ref{sec:heatmap}, alternative visualizations are used to better understand the weaknesses of the model when applied to actual images used to train, test, and validate the model.
+\autoref{fig:confusion_matrix} shows the general weaknesses of the model, but does not necessarily suggest where to look as to \emph{why} the model is not performing appropriately.
 
 \paragraph{Model Diagnostics}
 
