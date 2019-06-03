@@ -129,9 +129,18 @@ Most forensic examinations of footwear pattern evidence are limited to class cha
 
 In the wider field of computer vision, attention has turned to more robust methods for image recognition, such as convolutional neural networks (CNNs), which are capable of achieving near-human accuracy under even degraded image conditions \citep{krizhevskyImageNetClassificationDeep2012}. These networks are designed to mimic the process of human vision, and typically involve application of sets of filters, some of which mimic the filters used in the low-level techniques used by early automatic classification attempts. CNNs have been applied in footwear forensics, making use of more general neural networks optimized to detect objects found in natural scenes, such as trees, animals, buildings, and cars; the pre-trained network's features are then used to compare shoes or prints to determine how well they match \citep{kongCrossDomainImageMatching2019a,kongCrossDomainForensicShoeprint2017,zhangAdaptingConvolutionalNeural2017}. Neural network methods appear to be more successful than traditional image analysis techniques, but the features used for matching are not generally informative for humans, who typically classify shoes by patterns and spatial relationships \citep{davisIntelligenceApproachFootwear1981,grossVariabilitySignificanceClass2013}.
 
-In this paper, we discuss an alternate approach that uses an additional model layer to transfer the feature vector output into a vector of probabilities representing the detection of geometric elements in shoe tread images. Working within the feature space used by forensic examiners allows us to augment human-identified features with model output, assessing similarity of different shoe images on a feature set that is explicitly relevant to the domain.
+In this paper, we discuss an alternate approach that uses an additional model layer to transfer the feature vector output into a vector of probabilities representing the detection of geometric elements in shoe tread images. Working within the feature space used by forensic examiners allows us to augment human-identified features with model output, assessing similarity of different shoe images on a feature set that is explicitly relevant to the domain."
+\svp{Add 1-2 sentences connecting feature sets to the goal of reducing workload - possibly cite solemate as an example of manual feature identification}
 
 \section{Materials and Methods}
+\svp{Short bit (1-2 sentences) about low-level feature detectors and why they fail with this problem.}
+
+\svp{Motivate the use of CNNs directly - complex model, higher level of feature aggregation. Mention pre-trained networks to transition.}
+
+\svp{VGG16/ImageNet specifically. Note that the structure of the model is distinct from the fitted weights.}
+
+\svp{Transfer Learning - using CNNs with less data. Make the point that this is what makes our method different from some of the others we've already cited - training a new classifier allows us to work within already-existing semantic contexts that examiners use.}
+
 \paragraph{Transfer Learning}
 Neural networks are composed of sets of layers; the early layers, which are called the model base, contain feature detectors, and the final layers make up the classifier, or model head, which connects meaningful features to classification labels. A relatively simple convolutional neural network which processes image data may contain more than 14 million parameters in the model base and an additional 120 million parameters in the model head; to train a model of this nature requires millions of labeled images and a significant amount of computational power. Assembling data to train a network from scratch is often a nearly impossible task; the process of \emph{transfer learning} is a natural solution to this common problem. Transfer learning leverages the modularity of neural networks, that is, that the model base can be separated from the classifier which produces predictions.
 
@@ -160,6 +169,8 @@ gridExtra::grid.arrange(grobs = grobs, nrow = 5)
 
 In order to train a new head for the VGG16 model base, human-labeled images are necessary. The next section describes how these images were produced and used to fit our custom classifier.
 
+
+\svp{Moving towards ... how did we train the model}
 \paragraph{Annotated Training Data}
 
 Class characteristics are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes (e.g., all shoes of a specific brand and size). A sufficiently well-defined set of features can be used to separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}; the set of features used in that study included circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. After consulting with practitioners, we developed a set of categories suitable for automatic recognition by convolutional neural networks. These modifications were necessary because some of the definitions used in \citet{grossVariabilitySignificanceClass2013} require contextual spatial information which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class.
@@ -318,6 +329,7 @@ Model training is analogous to the human learning process. For example, a child 
 
 The \Sexpr{nrow(dfunion)} images were split such that 60\% were used for training. Since the categories do not exist in equal proportion in the labeled data, the training data were weighted by proportion during the training process to prevent the loss function from being overwhelmed by more frequent categories. Of the remaining 40\% of data, half were used for validation, to monitor the training process, and the remaining data were for testing the performance of the fitted model.
 
+\svp{This section header might need to move? Haven't decided yet...}
 \section{Results}
 
 \subsection{Model Training}
@@ -344,7 +356,7 @@ data.frame(history$metrics) %>%
 
 \autoref{fig:training-accuracy} shows the training and validation accuracy and loss at each epoch of the fitting process. Overfitting, or fitting a model which performs too well on the training data relative to the validation data, is seen when the validation loss starts to increase after reaching a global minimum. Alternately, underfitting occurs when the validation accuracy is still increasing when model optimization is terminated. Neither of these outcomes appears in \autoref{fig:training-accuracy}, indicating that the model optimization process was halted at an appropriate epoch.
 
-
+\svp{Starting into How CoNNOR performs}
 \subsection{Model Accuracy}
 
 \paragraph{Overall Accuracy} % Model-wise and class-by-class, w/ confusion matrix
@@ -431,7 +443,7 @@ Another interesting artifact in \autoref{fig:confusion_matrix} is that circles a
 \paragraph{Model Diagnostics}
 
 \section{Conclusions}
-
+\svp{Rework this to address 3 main conclusions - 1: NNs work for automatic feature ID, 2: Different levels of feature variability within classes, and 3: correcting for contrast is important.}
 The goal of this research was to develop a method to automatically identify geometric class characteristics of shoe outsoles. Such a method takes the ``impossible" problem of quantifying outsole features in a given population and lays the groundwork for a tractable solution. A set of geometric class characteristics was defined to both broadly classify a large variety of shoes and to narrow down similarity into a manageable number and type of features for further use in a shoeprint analysis. The final set of features used in this research achieves both goals quite well, and has potential for much finer-grained analysis when recognized features are combined with spatial information and relationships.
 
 CoNNOR was developed using the convolutional base of VGG16 and a newly trained classifier/head to identify the defined set of geometric features. After training, CoNNOR performs well on the data provided. In general, the model is able to identify many well-defined geometric shapes in the images both consistently and accurately. The prediction accuracy of this model provides the ability to compute statistics for the frequency of given features in a well-defined population.
