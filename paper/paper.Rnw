@@ -438,7 +438,8 @@ CoNNOR was developed using the convolutional base of VGG16 and a newly trained c
 
 \section{Future Work}
 
-Although CoNNOR performs well in its current state, there are still a number of ways to potentially improve prediction accuracy. For one, it is clear from Section~\ref{sec:model-consistency} that image contrast still plays a large role in how well the model classifies the geometric shapes present. Thus, exploring methods of color correction, such as histogram normalization, may prove useful for eliminating the effect of contrast on predictions. Geometric features are also relatively simple with respect to the features that are being detected by the final convolutional block of VGG16, as in \autoref{fig:vgg16layers}; it is quite possible that prediction accuracy could improve by directly classifying the features that are output by the fourth block, rather than using the full convolutional base.
+\svp{Need to show image contrast stuff to use this paragraph.}
+Although CoNNOR performs well in its current state, there are still a number of ways to potentially improve prediction accuracy. For one, it is clear that image contrast still plays a large role in how well the model classifies the geometric shapes present. Thus, exploring methods of color correction, such as histogram normalization, may prove useful for eliminating the effect of contrast on predictions. Geometric features are also relatively simple with respect to the features that are being detected by the final convolutional block of VGG16, as in \autoref{fig:vgg16layers}; it is quite possible that prediction accuracy could improve by directly classifying the features that are output by the fourth block, rather than using the full convolutional base.
 
 \bibliography{mybibfile}
 
