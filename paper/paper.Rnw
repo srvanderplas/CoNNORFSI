@@ -299,6 +299,30 @@ ggplot(df_summ_long, aes(x = brand, y = prop, shape = factor(shape),
   ggtitle("Proportion of labeled shoes containing each shape by brand")
 @
 
+<<brands-within-shapes>>=
+shapes <- lapply(X = classes, function(x){
+  out <- df_shoes[df_shoes[,x, drop = T],]
+  out$shape <- x
+  out
+})
+names(shapes) <- classes
+
+
+shapes %>% map_dfr(., function(x) {
+  x %>% group_by(brand) %>%
+    summarize(n = n()) %>%
+    arrange(desc(n)) %>%
+    mutate(prop = n / sum(n),
+           shape = x$shape[1:length(n)]) %>%
+    head(10)
+  }) %>%
+  ggplot() +
+  geom_text(aes(x = as.factor(shape),
+                               y = prop, label = brand,
+                               color = as.factor(shape)))
+@
+
+
 Labeled images are scarce relative to the amount of data necessary to train a neural network. One solution to this scarcity is to artificially enlarge the data set using a process called image augmentation \citep{krizhevskyImageNetClassificationDeep2012}. Augmentation is the transformation of original input data using image operations such as cropping, zoom, skew, rotation, and color balance modification in order to distort or alter the image while maintaining the essential features corresponding to the label. This process reduces the potential for overfitting the model to the specific set of image data used during the training process, and also increases the amount of data available for training; examples of pre- and post-augmentation images are shown in \autoref{fig:augmented}.
 
 \begin{figure}
