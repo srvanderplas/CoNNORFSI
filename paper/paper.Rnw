@@ -389,16 +389,19 @@ data.frame(history$metrics) %>%
         legend.background = element_rect(fill = "white"))
 @
 
+\fix{How much should be said about loss and loss functions?}
+\Mt{A loss function is a function that measures how far model predictions are from the labels given to an image for each image in the validation and test sets; the model "learns" by updating its predictions in such a way that will minimize this loss.}
+
 \autoref{fig:training-accuracy} shows the training and validation accuracy and loss at each epoch of the fitting process. Overfitting \mt{occurs when a model learns the training data so well that its understanding of the categories becomes specific to only the training cases, which, in turn, leads to poor prediction of new images that were not in the training set.}
 %Overfitting, or fitting a model which performs too well on the training data relative to the validation data,
-Overfitting is seen when the validation loss starts to increase after reaching a global minimum. Alternately, underfitting occurs when the validation accuracy is still increasing when model optimization is terminated\mt{, because model performance is still improving with continued training}. Neither of these outcomes appears in \autoref{fig:training-accuracy}, indicating that the model optimization process was halted at an appropriate epoch.
+Overfitting is suspected if the validation loss starts to increase after reaching a global minimum. Alternately, underfitting occurs if the validation accuracy is still increasing when model optimization is terminated\mt{, because model performance is still improving with continued training}. Neither of these outcomes appears in \autoref{fig:training-accuracy}, indicating that the model optimization process was halted at an appropriate epoch.
 
 %\svp{Starting into How CoNNOR performs}
 \subsection{Model Accuracy}
 
 \paragraph{Overall Accuracy} % Model-wise and class-by-class, w/ confusion matrix
-\svp{You need to explain these terms. Your CC was written for statisticians, this paper is for practitioners. You need a MUCH gentler introduction to the idea of accuracy, errors, and ROC curves, as well as a lot more definitions for terms.}
-\autoref{fig:overall-roc} shows the ROC curve for the full model, and \autoref{fig:class-roc} shows the curve for each class. The full model has an AUC of 0.88, and the AUC for individual classes ranges from 0.81 (for line) to 0.91 (for bowtie and text). While the class performances do vary slightly, each ROC curve is the same general shape and performs significantly better than random chance.
+%\svp{You need to explain these terms. Your CC was written for statisticians, this paper is for practitioners. You need a MUCH gentler introduction to the idea of accuracy, errors, and ROC curves, as well as a lot more definitions for terms.}
+\mt{Receiver Operating Characteristic (ROC) curves are a diagnostic plot that compares the false positive rate against the true positive rate for a classification method, and the Area Under the Curve (AUC) quantifies the shape of the ROC curve. Perfect prediction would be indicated by a right angle along the upper left corner of the plot, with a corresponding AUC of 1, and a diagonal line with an AUC of 0.5 indicates that the classification method performs no better than random chance.} \autoref{fig:overall-roc} shows the ROC curve for the model across all classes, and \autoref{fig:class-roc} shows the curve for each class. The full model has an AUC of 0.88, and the AUC for individual classes ranges from 0.81 (for line) to 0.91 (for bowtie and text). While the class performances do vary slightly, each ROC curve is the same general shape and performs \fix{significantly} better than random chance.
 
 <<overall-roc, fig.width = 5, fig.height = 5, out.width = ".5\\textwidth", fig.cap = "ROC curve showing overall model performance.", fig.scap = "Overall model performance ROC curve.">>=
 library(pROC)
@@ -447,9 +450,10 @@ ggplot() +
 \svp{Pros and cons of confusion matrix here? Maybe we just don't show the actual proportions on the graph? I'd like to discuss this more in person.}
 \svp{If we do include the confusion matrix, this section needs to be MUCH more clearly explained for practitioners. Cross-tabulation isn't a common vocab word...}
 
-A confusion matrix is a cross-tabulation of the labels assigned to an image and the labels predicted by the model. In a single-label problem, an image belongs to only one category and the model predicts only one label, so applying the wrong label is equivalent to failing to apply the correct label. Thus, every possible combination of true label and applied prediction is represented in the two-dimensional/traditional confusion matrix. Extending the confusion matrix to more complex problems requires additional considerations.
-
-Although some efforts to generalize confusion matrices to multi-class problems do exist in the literature \citep{landgrebeEfficientMulticlassROC2008}, it appears that confusion matrices have not previously been applied to multi-label classification problems. Since a single image may belong to a combination of the $n$ categories, it is no longer true that a false positive and a false negative are equivalent. In the confusion matrix presented in \autoref{fig:confusion_matrix}, the values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; however, the values are adjusted to remove the effect of any true positives from the calculation of false positive proportions. For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any image that truly contains both triangles and quadrilaterals is removed before calculating the proportion of false quadrilateral labels.
+\mt{ROC curves are useful for summarizing the accuracy of model predictions, but they do not indicate which classes are being assigned the false positive or false negative labels when accuracy is not perfect. A confusion matrix is a helpful diagnostic tool to understand which classes are commonly confused for other classes.} A confusion matrix is a \mt{summary of the relationships between} the labels assigned to an image and the labels predicted by the model.
+%In a single-label problem, an image belongs to only one category and the model predicts only one label, so applying the wrong label is equivalent to failing to apply the correct label. Thus, every possible combination of true label and applied prediction is represented in the two-dimensional/traditional confusion matrix. Extending the confusion matrix to more complex problems requires additional considerations.
+%Although some efforts to generalize confusion matrices to multi-class problems do exist in the literature \citep{landgrebeEfficientMulticlassROC2008}, it appears that confusion matrices have not previously been applied to multi-label classification problems. Since a single image may belong to a combination of the $n$ categories, it is no longer true that a false positive and a false negative are equivalent.
+In the confusion matrix presented in \autoref{fig:confusion_matrix}, the values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; however, the values are adjusted to remove the effect of any true positives from the calculation of false positive proportions. For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any image that truly contains both triangles and quadrilaterals is removed before calculating the proportion of false quadrilateral labels.
 
 <<confusion_matrix, fig.width = 9, fig.height = 8, out.width = "\\textwidth", fig.cap = "Confusion matrix, showing on the diagonal the correct classification rate and on the off-diagonal, classification errors. Note that in multi-label images, correct off-diagonal labels have been excluded from the calculation of false positives.", fig.scap = "Confusion matrix, with correct and incorrect model classifications.", dpi = 600>>=
 get_confusion_matrix(predictions = preds, classes = classes,
@@ -471,13 +475,35 @@ get_confusion_matrix(predictions = preds, classes = classes,
         panel.spacing = unit(c(0, 0, 0, 0), "mm"))
 @
 
-This modified confusion matrix preserves the ability to identify patterns in over- and under-predictions; for instance, the horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are overrepresented, as they are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles are often underpredicted relative to the images which actually contain these categories since they produce a large number of false positive predictions into other categories, as evidenced by the vertical bands.
+%This modified confusion matrix preserves the ability to identify patterns in over- and under-predictions; for instance,
+The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles
+%are often underpredicted relative to the images which actually contain these categories since they
+roduce a large number of false positive predictions into other categories, as evidenced by the vertical bands.
 
 Another interesting artifact in \autoref{fig:confusion_matrix} is that circles are often misclassified as text, and text is often mislabeled as containing circles. Not all of the images used in model training are accurately labeled: in some cases, the labels have not been updated after labeling guidelines have changed. The confusion between text and circles is a natural consequence of the overlap between geometric shapes and components of written text; it is not indicative of a lack of fit as much as a weakness in the classification system used to define the model.
 
-\autoref{fig:confusion_matrix} shows the general weaknesses of the model, but does not necessarily suggest where to look as to \emph{why} the model is not performing appropriately.
+\autoref{fig:confusion_matrix} shows \mt{which classes are being predicted incorrectly, but does not necessarily suggest \emph{why} the confusion is taking place. To investigate further, it is useful to} \fix{see what the model is seeing.}
+%the general weaknesses of the model, but does not necessarily suggest where to look as to \emph{why} the model is not performing appropriately.
 
 \paragraph{Model Diagnostics}
+
+\mt{A heatmap is a visual diagnostic tool that displays the portions of an image that are most significant to classification for a given class. Heatmaps provide diagnostic information: using these graphics, we can identify which locations in an image contribute most to CoNNOR's predictions.} In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image.
+
+\fix{I picked the heatmaps I thought illustrated the point best, but didn't modify them heavily yet. How many do we want to include, and do we want to highlight model challenges or just focus on the point that CoNNOR sees what we see?}
+
+<<chevron-circle-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing chevrons and circles.", fig.cap = "Chevrons are identified by sharp corners and parallel lines, but the thick line between the two shape sections is falsely identified as a quadrilateral.", fig.pos = "!t">>=
+heatmaps <- list.files(file.path(wd, "images", "heatmaps"),
+                       pattern = "^heatmap")
+knitr::include_graphics(heatmaps[grepl("chevron-circle", heatmaps)])
+@
+
+<<text-seychelles-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing text.", fig.cap = "This heatmap illustrates that the high probability of a circle is a result of the highly curled tails of the 'S' in the text.">>=
+knitr::include_graphics(heatmaps[grepl("text", heatmaps)])
+@
+
+<<corks-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing none of the target classes.", fig.cap = "This outsole shows repeated outlines of corks, which do not fall into any of the nine classes; the concave corners where the corks overlap are predicted to be stars, and the round edges lead to predictions of circles.">>=
+knitr::include_graphics(heatmaps[grepl("corks", heatmaps)])
+@
 
 \section{Conclusions}
 \svp{Rework this to address 3 main conclusions - 1: NNs work for automatic feature ID, 2: Different levels of feature variability within classes, and 3: correcting for contrast is important.}
