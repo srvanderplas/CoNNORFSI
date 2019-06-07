@@ -85,6 +85,9 @@ source(file.path(codedir, "count_images.R"))
 model_dir <- newest_model$path
 load(list.files(model_dir, pattern = "-history.Rdata", full.names = T)[1])
 load(file.path(get_newest()$path, get_newest(pattern = "\\d.Rdata")$base_file))
+
+model_wts_file <- file.path(newest_model$path, newest_model$base_file)
+loaded_model <- set_weights(model_wts_file)
 @
 
 
@@ -131,30 +134,21 @@ In the wider field of computer vision, attention has turned to more robust metho
 
 In this paper, we discuss an alternate approach that uses an additional model layer to transfer the feature vector output into a vector of probabilities representing the detection of geometric elements in shoe tread images. Working within the feature space used by forensic examiners allows us to augment human-identified features with model output, assessing similarity of different shoe images on a feature set that is explicitly relevant to the domain.
 %\svp{Add 1-2 sentences connecting feature sets to the goal of reducing workload - possibly cite solemate as an example of manual feature identification}
-\mt{In addition, much of the existing software to assess geometric similarity, such as SoleMate \fix{how to cite software?}, requires examiners to identify and label features manually; automating classification within the currently used feature space could reduce or eliminate the need for such manual classification.}
+\mt{In addition, much of the existing software to assess geometric similarity, such as SoleMate \fix{(how to cite software?)}, requires examiners to identify and label features manually; automating classification within the currently used feature space could reduce or eliminate the need for such manual classification.}
 
 \section{Materials and Methods}
 %\svp{Short bit (1-2 sentences) about low-level feature detectors and why they fail with this problem.}
-\mt{Shoeprint evidence from crime scenes is most commonly collected in the form of a photograph, so any useful method to automatically identify outsole characteristics must take the form of an image analysis task. There are a number of methods that may be employed to identify shapes and features in an image, such as generalized Hough transformations \citep{ballardGeneralizingHoughTransform1981} and other low-level feature extraction methods aimed at detecting specific shapes, such as edges, corners, blobs, or ridges \citep[Ch 15]{machineVision}. While these methods are useful in identifying these specific features at a low level, they are very computationally intensive and only identify features on a very small scale; as a result, they cannot reliably identify large geometric shapes like those that may be found in an outsole image.}
-\fix{Include? (my gut says its not necessary):} \mt{These classical methods are also extremely sensitive to lighting or color changes. As one or more models would be required for each geometric shape, classical methods would require use of additional machine learning models such as random forests to aggregate low-level features into functional geometries found on outsoles.}
+\mt{Shoeprint evidence from crime scenes is most commonly collected in the form of a photograph, so any useful method to automatically identify outsole characteristics must take the form of an image analysis task. There are a number of methods that may be employed to identify shapes and features in an image, such as generalized Hough transformations \citep{ballardGeneralizingHoughTransform1981} and other low-level feature extraction methods aimed at detecting specific shapes, such as edges, corners, blobs, or ridges \citep[Ch 15]{machineVision}. While these methods are useful in identifying these specific features at a low level, they are very computationally intensive and only identify features on a very small scale; as a result, they cannot reliably identify large geometric shapes like those that may be found in an outsole image.} \fix{Necessary?: In addition, as one or more models would be required for each geometric shape, classical methods would require use of additional machine learning models such as random forests to aggregate low-level features into functional geometries found on outsoles.}
 
 %\svp{Motivate the use of CNNs directly - complex model, higher level of feature aggregation. Mention pre-trained networks to transition.}
-Convolutional neural networks (CNNs) are widely recognized as superior for novel image classification. CNNs are a form of artificial neural network which make use of the image convolution operator used by many low-level feature extraction methods.%\footnote{The Google Trends interest graph for CNNs and computer vision shows a massive increase in convolutional neural networks between mid-2014 and 2018 \url{https://trends.google.com/trends/explore?date=2010-01-01\%202019-02-18&q=convolutional\%20neural\%20network,computer\%20vision}}.
-%As CNNs have evolved, their architecture has become more complex, but the fundamental reliance on the image convolution operator sets CNNs apart from other artificial neural networks \citep{guRecentAdvancesConvolutional2018}.
-CNNs have deep architectures that can be trained to identify complex patterns, but they are structurally similar to the human visual architecture and output binary or probabilistic predictions for given labels that are readily interpretable. As CNNs make use of labeled training data, the predictions generated are for features which are similar to those identified by humans, resulting in models with greater face validity. Once a CNN is trained, it is relatively fast and easy to apply the model to new images and obtain classifications.
-
-%\svp{VGG16/ImageNet specifically. Note that the structure of the model is distinct from the fitted weights.}
-%\svp{Transfer Learning - using CNNs with less data. Make the point that this is what makes our method different from some of the others we've already cited - training a new classifier allows us to work within already-existing semantic contexts that examiners use.}
-
-%\mt{Now that I can see the whole dang methods section, I think I prefer the order of the methods section as it is now, rather than the order suggested by the above comments, unless you feel strongly otherwise.}
+Convolutional neural networks (CNNs) are widely recognized as superior for novel image classification. CNNs are a form of artificial neural network which make use of the image convolution operator used by many low-level feature extraction methods, \mt{with the additional ability to aggregate such features and meaningfully connect them to a pre-determined set of labels}. CNNs have deep architectures that can be trained to identify complex patterns, but they are structurally similar to the human visual architecture and output binary or probabilistic predictions for given labels that are readily interpretable. As CNNs make use of labeled training data, the predictions generated are for features which are similar to those identified by humans, resulting in models with greater face validity. Once a CNN is trained, it is relatively fast and easy to apply the model to new images and obtain classifications.
 
 \paragraph{Transfer Learning}
 Neural networks are composed of sets of layers; the early layers, which are called the model base, contain feature detectors, and the final layers make up the classifier, or model head, which connects meaningful features to classification labels. A relatively simple convolutional neural network which processes image data may contain more than 14 million parameters in the model base and an additional 120 million parameters in the model head; to train a model of this nature requires millions of labeled images and a significant amount of computational power. Assembling data to train a network from scratch is often a nearly impossible task; the process of \emph{transfer learning} is a natural solution to this common problem. Transfer learning leverages the modularity of neural networks, that is, that the model base can be separated from the classifier which produces predictions.
 
 Many convolutional neural networks have been trained on a set of images known as ImageNet; these images are hierarchically labeled, so the same image of a dog may have labels of sky, grass, and trees, and the dog may be labeled as ``mammal'', ``dog'', ``retriever'', and ``golden retriever'' at increasing levels of label complexity \citep{dengImageNetLargeScaleHierarchical}. CNNs trained on ImageNet are optimized for general human-like vision, that is, the ability to recognize a large set of different features simultaneously. As a result, the base of networks trained on these sets are often used for transfer learning, because the initial layers are broadly generalizable to a wide variety of more specific image labeling tasks. \autoref{fig:vgg16layers} shows a selection of filters from VGG16, where each filter detects the presence of specific shapes and colors. \mt{Each row of filters in \autoref{fig:vgg16layers} corresponds to one of the five convolutional blocks of VGG16.} Filters in earlier convolutional blocks detect simple features, such as colors and blobs, while later filters detect more complex combinations of features. Each of the five convolutional blocks has between 128 and 1,536 filters, and a single image is made up of some combination of the thousands of features that are detected by those filters.
 
-%\fix{Transition needed?: The structure of the model is distinct from the fitted weights.}
-\mt{Each layer in the model structure is comprised of weights and connections between weights that have been optimized during training.} Transfer learning in neural network contexts involves freezing the weights of the pre-trained model base taken from a network trained on a more general set of images, so that during the training process, only the weights of the newly-added classifier are updated \citep{oquabLearningTransferringMidlevel2014}. In many cases, the entire model base is used, and fitted with a new model head; the modularity of CNNs makes this process relatively simple, and allows researchers to leverage pre-trained networks when working with diffierent sets of image data. Transfer learning allows CNNs to be applied to smaller datasets of several thousand images, reduces the amount of computational time required to fit the model, and provides boosted performance compared to training a new model from scratch \citep{yosinskiHowTransferableAre2014}. It has been successfully applied in automatic classification of medical images \citep{shinDeepConvolutionalNeural2016} as well as in various applications of shoe forensics \citep{kongCrossDomainForensicShoeprint2017,kongCrossDomainImageMatching2019a,zhangAdaptingConvolutionalNeural2017}.
+\mt{Each layer in the model structure is comprised of sets of weights and connections that have been optimized during training.} Transfer learning in neural network contexts involves freezing the weights of the pre-trained model base taken from a network trained on a more general set of images, so that during the training process, only the weights of the newly-added classifier are updated \citep{oquabLearningTransferringMidlevel2014}. In many cases, the entire model base is used, and fitted with a new model head; the modularity of CNNs makes this process relatively simple, and allows researchers to leverage pre-trained networks when working with diffierent sets of image data. Transfer learning allows CNNs to be applied to smaller datasets of several thousand images, reduces the amount of computational time required to fit the model, and provides boosted performance compared to training a new model from scratch \citep{yosinskiHowTransferableAre2014}. It has been successfully applied in automatic classification of medical images \citep{shinDeepConvolutionalNeural2016} as well as in various applications of shoe forensics \citep{kongCrossDomainForensicShoeprint2017,kongCrossDomainImageMatching2019a,zhangAdaptingConvolutionalNeural2017}.
 
 In this paper, we will demonstrate the use of transfer learning to automatically identify features in shoe treads which are used by forensic examiners, using a general-purpose CNN with relatively simple structure, VGG16, and a database of labeled shoe tread images we have assembled for this project, which are both described below. This approach differs from other approaches \citep{kongCrossDomainForensicShoeprint2017,kongCrossDomainImageMatching2019a,zhangAdaptingConvolutionalNeural2017} in automatic footwear identification which use the output from the model base directly and do not attempt to add human-friendly contextual information with an additional classifier.
 
@@ -242,11 +236,7 @@ annotated_imgs %>%
         legend.background = element_rect(fill = "white"))
 @
 
-%\svp{It might be good to add in some (new) statistics relating brand information to common geometric features in tread - show, for instance, the top N brands with bowties vs. the top N brands with polygons. }
-
-\mt{The brand plots are still displaying weirdly for me, and all the figures are really squished and cut off?}
-
-<<brand-plots, device = "cairo">>=
+<<brand-plots, device = "cairo", include = F>>=
 img_names <- dfunion$filename %>% basename() %>% as.vector
 
 labs <- sapply(classes, grepl, x = str_extract(img_names, "^.*?-\\d?-"))
@@ -297,10 +287,10 @@ df_summ_long <- df_summ %>%
 df_summ_long$brand <- as.factor(df_summ_long$brand)
 df_summ_long$shape <- factor(df_summ_long$shape, levels = classes)
 
-# Line plot
-ggplot(df_summ_long) + geom_point(aes(x = prop, y = shape, color = brand)) +
-  geom_path(aes(x = prop, y = shape, group = brand, color = brand)) +
-  ggtitle("Shape proportions by brand")
+# # Line plot
+# ggplot(df_summ_long) + geom_point(aes(x = prop, y = shape, color = brand)) +
+#   geom_path(aes(x = prop, y = shape, group = brand, color = brand)) +
+#   ggtitle("Shape proportions by brand")
 
 # unicode_symbols <- c(bowtie = "\u26FB", chevron = "\uFE3D",
 #                      circle =  "\u23FA", line = "\u2225",
@@ -314,6 +304,7 @@ ggplot(df_summ_long, aes(x = brand, y = prop, shape = factor(shape),
   scale_shape_manual(values = c("\u26FB","\uFE3D","\u23FA","\u2225",
                                 "\u2B23","\u25A0","\u2605","a","\u25BC")) +
   theme_bw() +
+  theme(legend.position = "none") +
   coord_flip() +
   ggtitle("Proportion of labeled shoes containing each shape by brand")
 @
@@ -326,7 +317,6 @@ shapes <- lapply(X = classes, function(x){
 })
 names(shapes) <- classes
 
-
 shapes %>% map_dfr(., function(x) {
   x %>% group_by(brand) %>%
     summarize(n = n()) %>%
@@ -338,12 +328,14 @@ shapes %>% map_dfr(., function(x) {
   ggplot() +
   geom_text(aes(x = as.factor(shape),
                                y = prop, label = brand,
-                               color = as.factor(shape)))
+                               color = as.factor(shape))) +
+  theme(legend.position = "none")
 @
 
 
 %Labeled images are scarce relative to the amount of data necessary to train a neural network.
-\mt{Although transfer learning substantially reduces the amount of data required to train a CNN, l}abeled images are scarce \fix{[difficult to generate]} relative to the amount of data necessary to train a neural network \mt{with adequate performance}. \fix{} One solution to this scarcity is to artificially enlarge the data set using a process called image augmentation \citep{krizhevskyImageNetClassificationDeep2012}. Augmentation is the transformation of original input data using image operations such as cropping, zoom, skew, rotation, and color balance modification in order to distort or alter the image while maintaining the essential features corresponding to the label. This process reduces the potential for overfitting the model to the specific set of image data used during the training process, and also increases the amount of data available for training; examples of pre- and post-augmentation images are shown in \autoref{fig:augmented}.
+\mt{Although transfer learning substantially reduces the amount of data required to train a CNN, l}abeled images are \mt{still difficult or time-consuming to generate} %scarce \fix{[difficult to generate]}
+relative to the amount of data necessary to train \mt{even a small} neural network \mt{adequately. Another common} solution to data scarcity is to artificially enlarge the data set using a process called image augmentation \citep{krizhevskyImageNetClassificationDeep2012}. Augmentation is the transformation of original input data using image operations such as cropping, zoom, skew, rotation, and color balance modification in order to distort or alter the image while maintaining the essential features corresponding to the label. This process reduces the potential for overfitting the model to the specific set of image data used during the training process, and also increases the amount of data available for training; examples of pre- and post-augmentation images are shown in \autoref{fig:augmented}.
 
 \begin{figure}
 \centering
@@ -390,18 +382,20 @@ data.frame(history$metrics) %>%
 @
 
 \fix{How much should be said about loss and loss functions?}
-\Mt{A loss function is a function that measures how far model predictions are from the labels given to an image for each image in the validation and test sets; the model "learns" by updating its predictions in such a way that will minimize this loss.}
+\mt{A loss function is a function that measures how far model predictions are from the given labels for each image in the validation and test sets; the model ``learns" by updating its predictions in such a way that will minimize this loss.}
 
 \autoref{fig:training-accuracy} shows the training and validation accuracy and loss at each epoch of the fitting process. Overfitting \mt{occurs when a model learns the training data so well that its understanding of the categories becomes specific to only the training cases, which, in turn, leads to poor prediction of new images that were not in the training set.}
 %Overfitting, or fitting a model which performs too well on the training data relative to the validation data,
 Overfitting is suspected if the validation loss starts to increase after reaching a global minimum. Alternately, underfitting occurs if the validation accuracy is still increasing when model optimization is terminated\mt{, because model performance is still improving with continued training}. Neither of these outcomes appears in \autoref{fig:training-accuracy}, indicating that the model optimization process was halted at an appropriate epoch.
 
-%\svp{Starting into How CoNNOR performs}
 \subsection{Model Accuracy}
 
 \paragraph{Overall Accuracy} % Model-wise and class-by-class, w/ confusion matrix
 %\svp{You need to explain these terms. Your CC was written for statisticians, this paper is for practitioners. You need a MUCH gentler introduction to the idea of accuracy, errors, and ROC curves, as well as a lot more definitions for terms.}
-\mt{Receiver Operating Characteristic (ROC) curves are a diagnostic plot that compares the false positive rate against the true positive rate for a classification method, and the Area Under the Curve (AUC) quantifies the shape of the ROC curve. Perfect prediction would be indicated by a right angle along the upper left corner of the plot, with a corresponding AUC of 1, and a diagonal line with an AUC of 0.5 indicates that the classification method performs no better than random chance.} \autoref{fig:overall-roc} shows the ROC curve for the model across all classes, and \autoref{fig:class-roc} shows the curve for each class. The full model has an AUC of 0.88, and the AUC for individual classes ranges from 0.81 (for line) to 0.91 (for bowtie and text). While the class performances do vary slightly, each ROC curve is the same general shape and performs \fix{significantly} better than random chance.
+
+\mt{For each image in the test set, the ``true labels" are nine human-assigned labels of 0 or 1 corresponding to each of the nine shape categories. When the CNN predicts which shapes are in the image, however, it assigns a probability between 0 and 1 for each shape category, with a total of nine probabilities per test image. Thus, to determine the accuracy of the model predictions, one must choose a threshold to the probabilities, such that a predicted probability above the threshold indicates a ``yes" prediction from the model and a probability below the threshold indicates a ``no". If the threshold is high, \fix{moderate} probabilities will be treated as a ``no", which increases the number of true negative and false negative predictions. Conversely, if the threshold is too low, \fix{moderate} probabilites will be considered as ``yes", which increases the true and false positive predictions in the data. An appropriate threshold must be chosen to produce a high true positive rate while also ideally keeping the false positive rate low.}
+
+\mt{Receiver Operating Characteristic (ROC) curves are a type diagnostic plot that compares the false positive rate against the true positive rate for a classification method, computed by comparing the two rates at a number of thresholds, and the Area Under the Curve (AUC) quantifies the shape of the ROC curve. Perfect prediction would be indicated by a right angle along the upper left corner of the plot, with a corresponding AUC of 1, and a diagonal line with an AUC of 0.5 would indicate that the classification method performs no better than random chance.} \autoref{fig:overall-roc} shows the ROC curve for \fix{the model} across all classes, and \autoref{fig:class-roc} shows the curve for each class. The full model has an AUC of 0.88, and the AUC for individual classes ranges from 0.81 (for line) to 0.91 (for bowtie and text). While the class performances do vary slightly, each ROC curve is the same general shape and performs \fix{significantly} better than random chance. \mt{The points in \autoref{fig:class-roc} represent the equal error rate (EER), which is the threshold where there is equal probability of a false positive or false negative error. Thus, for each category, any model prediction with probability above the EER for that shape is considered a positive prediction.}
 
 <<overall-roc, fig.width = 5, fig.height = 5, out.width = ".5\\textwidth", fig.cap = "ROC curve showing overall model performance.", fig.scap = "Overall model performance ROC curve.">>=
 library(pROC)
@@ -448,12 +442,10 @@ ggplot() +
 @
 
 \svp{Pros and cons of confusion matrix here? Maybe we just don't show the actual proportions on the graph? I'd like to discuss this more in person.}
-\svp{If we do include the confusion matrix, this section needs to be MUCH more clearly explained for practitioners. Cross-tabulation isn't a common vocab word...}
 
 \mt{ROC curves are useful for summarizing the accuracy of model predictions, but they do not indicate which classes are being assigned the false positive or false negative labels when accuracy is not perfect. A confusion matrix is a helpful diagnostic tool to understand which classes are commonly confused for other classes.} A confusion matrix is a \mt{summary of the relationships between} the labels assigned to an image and the labels predicted by the model.
-%In a single-label problem, an image belongs to only one category and the model predicts only one label, so applying the wrong label is equivalent to failing to apply the correct label. Thus, every possible combination of true label and applied prediction is represented in the two-dimensional/traditional confusion matrix. Extending the confusion matrix to more complex problems requires additional considerations.
-%Although some efforts to generalize confusion matrices to multi-class problems do exist in the literature \citep{landgrebeEfficientMulticlassROC2008}, it appears that confusion matrices have not previously been applied to multi-label classification problems. Since a single image may belong to a combination of the $n$ categories, it is no longer true that a false positive and a false negative are equivalent.
-In the confusion matrix presented in \autoref{fig:confusion_matrix}, the values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; however, the values are adjusted to remove the effect of any true positives from the calculation of false positive proportions. For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any image that truly contains both triangles and quadrilaterals is removed before calculating the proportion of false quadrilateral labels.
+
+In the confusion matrix presented in \autoref{fig:confusion_matrix}, the values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; \mt{however, since a single image may truly contain multiple shapes}, the values are adjusted to remove the effect of any true positives from the calculation of false positive proportions. For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any image that truly contains both triangles and quadrilaterals is removed before calculating the proportion of false quadrilateral labels.
 
 <<confusion_matrix, fig.width = 9, fig.height = 8, out.width = "\\textwidth", fig.cap = "Confusion matrix, showing on the diagonal the correct classification rate and on the off-diagonal, classification errors. Note that in multi-label images, correct off-diagonal labels have been excluded from the calculation of false positives.", fig.scap = "Confusion matrix, with correct and incorrect model classifications.", dpi = 600>>=
 get_confusion_matrix(predictions = preds, classes = classes,
@@ -475,25 +467,44 @@ get_confusion_matrix(predictions = preds, classes = classes,
         panel.spacing = unit(c(0, 0, 0, 0), "mm"))
 @
 
-%This modified confusion matrix preserves the ability to identify patterns in over- and under-predictions; for instance,
-The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles
-%are often underpredicted relative to the images which actually contain these categories since they
-roduce a large number of false positive predictions into other categories, as evidenced by the vertical bands.
-
-Another interesting artifact in \autoref{fig:confusion_matrix} is that circles are often misclassified as text, and text is often mislabeled as containing circles. Not all of the images used in model training are accurately labeled: in some cases, the labels have not been updated after labeling guidelines have changed. The confusion between text and circles is a natural consequence of the overlap between geometric shapes and components of written text; it is not indicative of a lack of fit as much as a weakness in the classification system used to define the model.
+The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles produce a large number of false positive predictions into other categories, as evidenced by the vertical bands. Another interesting artifact in \autoref{fig:confusion_matrix} is that circles are often misclassified as text, and text is often mislabeled as containing circles. Not all of the images used in model training are accurately labeled: in some cases, the labels have not \mt{yet} been updated after labeling guidelines have changed. The confusion between text and circles is a natural consequence of the overlap between geometric shapes and components of written text; it is not indicative of a lack of fit as much as a weakness in the classification system used to define the model.
 
 \autoref{fig:confusion_matrix} shows \mt{which classes are being predicted incorrectly, but does not necessarily suggest \emph{why} the confusion is taking place. To investigate further, it is useful to} \fix{see what the model is seeing.}
 %the general weaknesses of the model, but does not necessarily suggest where to look as to \emph{why} the model is not performing appropriately.
 
+\paragraph{Model Predictions}
+
+ \mt{What else to say here?}
+
+<<exemplars-consistency, fig.cap = "Examples", fig.pos = "p!", out.width = "100%", cache = T, fig.pos = "!h">>=
+exemplar <- list.files(file.path(wd, "images", "consistency", "exemplar"), full.names = T)
+pred_prob_plot(exemplar, loaded_model)
+@
+
+\fix{Can also look at many examples within same shape categories.}
+
+<<chevrons-consistency, fig.cap = "Chevrons", fig.pos = "p!", out.width = "100%", cache = T>>=
+chevron <- list.files(file.path(wd, "images", "consistency", "chevron"), full.names = T)
+pred_prob_plot(chevron, loaded_model)
+@
+
+<<circle-text-consistency, fig.cap = "Text with circles or circle-like shapes", fig.pos = "p!", out.width = "100%", cache = T>>=
+circle_text <- list.files(file.path(wd, "images", "consistency", "circle-text"), full.names = T)
+pred_prob_plot(circle_text, loaded_model)
+@
+
+
 \paragraph{Model Diagnostics}
 
-\mt{A heatmap is a visual diagnostic tool that displays the portions of an image that are most significant to classification for a given class. Heatmaps provide diagnostic information: using these graphics, we can identify which locations in an image contribute most to CoNNOR's predictions.} In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image.
+\mt{A heatmap is a visual diagnostic tool that highlights the portions of an image that are most significant to classification for a given class. Using these graphics, we can identify which locations in an image contribute most to the model's predictions.} In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image.
 
 \fix{I picked the heatmaps I thought illustrated the point best, but didn't modify them heavily yet. How many do we want to include, and do we want to highlight model challenges or just focus on the point that CoNNOR sees what we see?}
 
-<<chevron-circle-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing chevrons and circles.", fig.cap = "Chevrons are identified by sharp corners and parallel lines, but the thick line between the two shape sections is falsely identified as a quadrilateral.", fig.pos = "!t">>=
+\FloatBarrier
+
+<<chevron-circle-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing chevrons and circles.", fig.cap = "Chevrons are identified by sharp corners and parallel lines, but the thick line between the two shape sections is falsely identified as a quadrilateral.", fig.pos = "!h">>=
 heatmaps <- list.files(file.path(wd, "images", "heatmaps"),
-                       pattern = "^heatmap")
+                       pattern = "^heatmap", full.names = T)
 knitr::include_graphics(heatmaps[grepl("chevron-circle", heatmaps)])
 @
 
@@ -504,6 +515,8 @@ knitr::include_graphics(heatmaps[grepl("text", heatmaps)])
 <<corks-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing none of the target classes.", fig.cap = "This outsole shows repeated outlines of corks, which do not fall into any of the nine classes; the concave corners where the corks overlap are predicted to be stars, and the round edges lead to predictions of circles.">>=
 knitr::include_graphics(heatmaps[grepl("corks", heatmaps)])
 @
+
+\FloatBarrier
 
 \section{Conclusions}
 \svp{Rework this to address 3 main conclusions - 1: NNs work for automatic feature ID, 2: Different levels of feature variability within classes, and 3: correcting for contrast is important.}
