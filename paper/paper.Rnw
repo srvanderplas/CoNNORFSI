@@ -500,7 +500,6 @@ pred_prob_plot(circle_text, loaded_model)
 
 \fix{I picked the heatmaps I thought illustrated the point best, but didn't modify them heavily yet. How many do we want to include, and do we want to highlight model challenges or just focus on the point that CoNNOR sees what we see?}
 
-\FloatBarrier
 
 <<chevron-circle-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing chevrons and circles.", fig.cap = "Chevrons are identified by sharp corners and parallel lines, but the thick line between the two shape sections is falsely identified as a quadrilateral.", fig.pos = "!h">>=
 heatmaps <- list.files(file.path(wd, "images", "heatmaps"),
@@ -516,7 +515,6 @@ knitr::include_graphics(heatmaps[grepl("text", heatmaps)])
 knitr::include_graphics(heatmaps[grepl("corks", heatmaps)])
 @
 
-\FloatBarrier
 
 \section{Conclusions}
 \svp{Rework this to address 3 main conclusions - 1: NNs work for automatic feature ID, 2: Different levels of feature variability within classes, and 3: correcting for contrast is important.}
