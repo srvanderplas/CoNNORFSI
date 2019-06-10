@@ -158,7 +158,7 @@ Each layer in the model structure is comprised of sets of weights and connection
 \paragraph{VGG16}
 Developed by Oxford's Visual Graphics Group, VGG16 is a \mt{pre-trained} CNN with 16 ``functional" (i.e., convolutional and densely connected) layers and 5 ``structural" max pooling layers \citep{krizhevskyImageNetClassificationDeep2012}. In contrast to other popular networks, like ResNet, VGG has a relatively simple structure that provides easier training and interpretability with very little sacrificed accuracy. The simplicity of this structure provides the ability to peer into the inner workings of the network for diagnostic purposes, providing a distinct advantage over more complicated network structures with slightly higher accuracy ratings. VGG16 is a common choice for transfer learning because of this structural simplicity; it has been used for detection of text in natural images \citep{zhongDeepTextUnifiedFramework2016}, medical imaging classification \citep{oquabLearningTransferringMidlevel2014}, classification of weld defects \citep{liuWeldDefectImages2018}, and many other domain-specific image recognition tasks that are more specific than the ImageNet data on which it was trained. \autoref{fig:VGG16-structure} shows the architecture of VGG16; with transfer learning, the VGG16 model head is replaced with a trained model head specific to recognition of shoeprint class characteristics.
 
-\mt{The model base of VGG16 is made up of five convolutional blocks alternated with max pooling layers. Each convolutional block is made up of two or three convolutional layers, and each layer is made up of hundreds of filters, such that each of the five convolutional blocks has between 128 and 1,536 filters. Strictly speaking, a filter is a set of numerical weights that, when applied to an image, quantifies the presence of the specific shapes and/or colors that the filter is trained to detect. \autoref{fig:vgg16layers} shows a selection of filters from VGG16, with each row corresponding to one of the five convolutional blocks. Filters in earlier convolutional blocks detect simple features, such as colors and blobs, while later filters detect more complex combinations of features. When considered together, the series of filters perform the process of feature detection, such that a single image is made up of some combination of the thousands of features that are detected by filters. Although the filters of VGG16 have been trained and optimized on the ImageNet Data, the large number of filters span a wide variety of shapes and features} \fix{which are still useful/relevant to classifying outsoles. In a sense, this is much like teaching humans to classify objects they have never seen before: an object may be unfamiliar, but our eyes can still detect its color, shape, and texture because we have learned these ideas from other sources.}
+\mt{The model base of VGG16 is made up of five convolutional blocks alternated with max pooling layers. Each convolutional block is made up of two or three convolutional layers, and each layer is made up of hundreds of filters, such that each of the five convolutional blocks has between 128 and 1,536 filters. Strictly speaking, a filter is a set of numerical weights that, when applied to an image, quantifies the presence of the specific shapes and/or colors that the filter is trained to detect. \fix{Necessary? (Or just skip...): Visualizing a filter then refers to visualizing the features to which the filter provides its maximum response.} \autoref{fig:vgg16layers} shows a selection of filters from VGG16, with each row corresponding to one of the five convolutional blocks. Filters in earlier convolutional blocks detect simple features, such as colors and blobs, while later filters detect more complex combinations of features. When considered together, the series of filters perform the process of feature detection, such that a single image is made up of some combination of the thousands of features that are detected by filters. Although the filters of VGG16 have been trained and optimized on the ImageNet Data, the large number of filters span a wide variety of shapes and features} \fix{which are still useful/relevant to classifying outsoles. In a sense, this is much like teaching humans to classify objects they have never seen before: an object may be unfamiliar, but our eyes can still detect its color, shape, and texture because we have learned these ideas from other sources.}
 
 <<vgg16layers, fig.width = 7, fig.height = 5.75, fig.cap = "A selection of filters from the convolutional layers of VGG16.">>=
 imgs <- list.files(file.path(wd, "images", "vgg16layers"),
@@ -191,7 +191,6 @@ knitr::include_graphics(file.path(wd, "images", "labeled_filters.png"))
 
 In this paper, we demonstrate the use of transfer learning to automatically identify features in shoe treads that are used by forensic examiners. To do this, we leverage the relatively simple structure and generalizability of VGG16 and train a new classifier using a database of labeled shoe tread images we have assembled for this project. This approach differs from other approaches \citep{kongCrossDomainForensicShoeprint2017,kongCrossDomainImageMatching2019a,zhangAdaptingConvolutionalNeural2017} in automatic footwear identification that use the output from the model base directly and do not attempt to add human-friendly contextual information with an additional classifier. The next section describes how the database of images was produced and used to fit our custom classifier.
 
-%\svp{Moving towards ... how did we train the model}
 \paragraph{Annotated Training Data}
 
 Class characteristics are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes (e.g., all shoes of a specific brand and size). A sufficiently well-defined set of features can be used to separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}; the set of features used in that study included circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. After consulting with practitioners, we developed a set of categories suitable for automatic recognition by convolutional neural networks. These modifications were necessary because some of the definitions used in \citet{grossVariabilitySignificanceClass2013} require contextual spatial information which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class.
@@ -257,7 +256,6 @@ annotated_imgs %>%
         legend.background = element_rect(fill = "white"))
 @
 
-%Labeled images are scarce relative to the amount of data necessary to train a neural network.
 Although transfer learning substantially reduces the amount of data required to train a CNN by several orders of magnitude, labeled images are still \fix{difficult or time-consuming} to generate relative to the amount of data necessary to train even a small neural network adequately. Thus, to make the most efficient use of the existing labeled data, we enlarge the training data using a process called image augmentation \citep{krizhevskyImageNetClassificationDeep2012}. Augmentation is the transformation of original input data using image operations such as cropping, zoom, skew, rotation, and color balance modification in order to distort or alter the image while maintaining the essential features corresponding to the label. This process reduces the potential for overfitting the model to the specific set of image data used during the training process, and also increases the amount of data available for training. Examples of pre- and post-augmentation images are shown in \autoref{fig:augmented}.
 
 \begin{figure}
@@ -325,24 +323,25 @@ Overfitting is when a model learns the training data so well that its understand
 \item Confusion Matrix
   \begin{itemize}
   \item Show patterns in misclassification
-  \item Conf mat doesn't tell us why certain predictions are wrong
+  \item Motivates further understanding of common mistakes
   \end{itemize}
-\item In this paper, we identify two main reasons for error: some classes are more variable, and some classes share physical features (I.e., the model has to learn a lot of features to encapsulate a class with lots of variety, but then other classes share those features)
+\item Two main reasons for error: some classes are more variable, and some classes share physical features (I.e., the model has to learn a lot of features to encapsulate a class with lots of variety, but then other classes share those features)
 \item Brands
   \begin{itemize}
-  \item Bowties/polygons/stars are mostly a few brands, but the top quad/line brands still only take up a small proportion of all quads (.04 or less)
+  \item Bowties/polygons/stars are mostly found in only a few brands, but the top N quad/line brands only take up a small proportion of all quads/lines (.04 or less)
+  \item In general, the most difficult classes to classify are those that are highly variable
   \end{itemize}
 \item Heatmaps
   \begin{itemize}
   \item Verify that the model is using appropriate features when predictions are correct
-  \item Show examples for strong misclassification, but make the case that the mistakes are understandable
+  \item Show examples for confident misclassifications (like Seychelles), but make the case that the mistakes are understandable
   \end{itemize}
 \end{itemize}
 }
 
 \paragraph{Overall Accuracy}
 
-For each image in the test set, the ``true labels" are nine human-assigned labels of 0 or 1 corresponding to the presence or absence of each of the nine shape categories in the image. When the CNN predicts which shapes are in the image, however, it assigns a probability between 0 and 1 for each shape category, with a total of nine probabilities per test image. Thus, to determine the accuracy of the model predictions, we must select a threshold for each label to discretize the model predictions.
+For each image in the test set, the ``true" labels are nine human-assigned labels of 0 or 1 corresponding to the presence or absence of each of the nine shape categories in the image. When the CNN predicts which shapes are in the image, however, it assigns a probability between 0 and 1 for each shape category, with a total of nine probabilities per test image. Thus, to determine the accuracy of the model predictions, we must select a threshold for each label to discretize the model predictions.
 If the threshold is too high, \fix{moderate} probabilities will be treated as a ``no", which increases the number of true negative and false negative predictions. Conversely, if the threshold is too low, \fix{moderate} probabilites will be considered as ``yes", which increases the true and false positive predictions in the data. An appropriate threshold must be chosen to produce a high true positive rate while also ideally keeping the false positive rate low.
 
 Receiver Operating Characteristic (ROC) curves are a type diagnostic plot which compare the false positive rate to the true positive rate for a classification method, and the Area Under the Curve (AUC) quantifies the shape of the ROC curve. Perfect prediction would be indicated by a right angle along the upper left corner of the plot, with a corresponding AUC of 1, and a diagonal line with an AUC of 0.5 would indicate that the classification method performs no better than random chance. \autoref{fig:overall-roc} shows the ROC curve for \fix{the model} across all classes, and \autoref{fig:class-roc} shows the curve for each class. The full model has an AUC of 0.88, and the AUC for individual classes ranges from 0.81 (for lines) to 0.91 (for bowtie and text). While the class performances do vary slightly, each ROC curve is the same general shape and performs significantly better than random chance. The points in \autoref{fig:class-roc} represent the equal error rate (EER), which is the threshold where there is equal probability of a false positive or false negative error. We will use the class-wise EER to set a threshold corresponding to each class, so that any model prediction with probability above the EER for that shape is considered a positive prediction.
@@ -392,36 +391,40 @@ ggplot() +
 @
 
 \paragraph{Model Predictions}
-\mt{ROC curves provide a general summary of model accuracy. To learn more about how specific images are classified, we can view images from the test set along with their respective nine model predictions. \autoref{fig:single-exemplars} shows model predictions for images that contain only one type of shape, and \autoref{fig:multi-exemplars} shows similar predictions for images containing multiple shapes. Most predictions for the single-label images are straightforward, but there is much less consensus of model opinion in the multi-label images. }
+\mt{The ROC curves provide only a general summary of model accuracy; to learn more about how specific images are classified, we can view images from the test set along with their respective nine model predictions.} \autoref{fig:single-exemplars} shows model predictions for images that contain only one type of shape, and \autoref{fig:multi-exemplars} shows similar predictions for images containing multiple shapes. Most predictions for the single-label images are straightforward; all of the archetypical shapes are corectly identified by the model, with only small confusions like those between quad/polygon and circle/text. \fix{A later section will discuss possible causes for this confusion.}
 
 <<single-exemplars, fig.cap = "Examples containing a single shape", fig.pos = "p!", out.width = "100%", cache = T>>=
 archetype <- list.files(file.path(wd, "images", "consistency", "single-exemplar"), full.names = T)
 pred_prob_plot(archetype, loaded_model, sort = F)
 @
 
+The multi-label images also perform quite well. \fix{Find a few more examples here and discuss them. Maybe a few similar ones to show consistency matters more than explicit label. Make the point that this task is messy and shape definitions are hard, but the model is doing pretty well given the circumstances.}
+
 <<multi-exemplars, fig.cap = "Examples containing multiple shapes", fig.pos = "p!", out.width = "100%", cache = T>>=
 exemplar <- list.files(file.path(wd, "images", "consistency", "multi-exemplar"), full.names = T)
 pred_prob_plot(exemplar, loaded_model)
 @
 
-\mt{These figures provide representative examples of classifications across multiple categories; it is also useful to examine many cases within a given shape. \autoref{fig:chevrons-consistency}}
+\fix{These figures provide representative examples of classifications across multiple categories; it is also useful to examine many cases within a given shape.} \mt{\autoref{fig:chevrons-consistency} shows a number of images containing chevrons. The top four rows show regularly repeating chevron patterns and seems to indicate that the model optimally identifies chevrons of a certain width; wide chevrons cross into the realm of bowties, whereas narrow chevrons become indistinguishable from lines. The next six rows show individual and closed chevrons. There is a significant amount of confusion between these wider chevrons and quadrilaterals. Finally, the bottom four rows show less-than-standard chevrons. The rounded chevron has a much lower prediction than those with sharper angles, but still exceeds the EER for chevron; the white chevrons are confounded with overlaid circles, which introduces a complexity that the model attributes to text.}
 
 <<chevrons-consistency, fig.cap = "Chevrons", fig.pos = "p!", out.width = "100%", cache = T>>=
 chevron <- list.files(file.path(wd, "images", "consistency", "chevron"), full.names = T)
 pred_prob_plot(rev(chevron), loaded_model, sort = F)
 @
 
+\fix{Describe \autoref{fig:circle-text-consistency}...... The final two don't contain a true circle. IDK why the TOMS logo totally misses circle.}
+
 <<circle-text-consistency, fig.cap = "Text with circles or circle-like shapes", fig.pos = "p!", out.width = "100%", cache = T>>=
 circle_text <- list.files(file.path(wd, "images", "consistency", "circle-text"), full.names = T)
 pred_prob_plot(rev(circle_text), loaded_model, sort = F)
 @
 
-
 %\svp{Pros and cons of confusion matrix here? Maybe we just don't show the actual proportions on the graph? I'd like to discuss this more in person.}
 
-\fix{Now that we've seen specific examples, it is useful to summarize the systematic errors by class.} A confusion matrix is a helpful diagnostic tool to understand which classes are commonly confused for other classes.} A confusion matrix is a \mt{summary of the relationships between} the labels assigned to an image and the labels predicted by the model.
-
-In the confusion matrix presented in \autoref{fig:confusion_matrix}, the values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; however, since a single image may truly contain multiple shapes, the values have been adjusted to remove the effect of any true positives from the calculation of false positive proportions. \svp{As a result of this adjustment, the probabilities off-diagonal are the proportion ... need to explain the conditional probability we're showing here} %\svp{I can't remember exactly how we're doing that, but we may want to look more closely at that - if we set everything to NA instead of 0, the rate calculations would be higher than expected}
+mt{\paragraph{Accuracy by class}}
+\fix{Many of the trends in the examples in figures \ref{fig:single-exemplars}-\ref{fig:circle-text-consistency} are not unique. A confusion matrix is a type of visualization that summarizes the relationships between the labels assigned to an image and the labels predicted by the model, and is a helpful diagnostic tool to understand which classes are systematically misclassified.} \mt{The confusion matrix for \fix{our model} is presented in \autoref{fig:confusion_matrix}}. The values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; however, since a single image may truly contain multiple shapes, the values have been adjusted to remove the effect of any true positives from the calculation of false positive proportions.
+%\svp{As a result of this adjustment, the probabilities off-diagonal are the proportion ... need to explain the conditional probability we're showing here}
+\fix{As a result of this adjustment, the off-diagonal values are the proportion of images within a true class that are falsely labeled as containing another class that has not been identified in the image.}%\svp{I can't remember exactly how we're doing that, but we may want to look more closely at that - if we set everything to NA instead of 0, the rate calculations would be higher than expected}
 For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any image that truly contains both triangles and quadrilaterals is removed before calculating the proportion of false quadrilateral labels.
 
 <<confusion_matrix, fig.width = 9, fig.height = 8, out.width = "\\textwidth", fig.cap = "Confusion matrix, showing on the diagonal the correct classification rate and on the off-diagonal, classification errors. Note that in multi-label images, correct off-diagonal labels have been excluded from the calculation of false positives.", fig.scap = "Confusion matrix, with correct and incorrect model classifications.", dpi = 600>>=
@@ -446,11 +449,11 @@ get_confusion_matrix(predictions = preds, classes = classes,
 
 The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles produce a large number of false positive predictions into other categories, as evidenced by the vertical bands. Another interesting artifact in \autoref{fig:confusion_matrix} is that circles are often misclassified as text, and text is often mislabeled as containing circles. Not all of the images used in model training are accurately labeled: in some cases, the labels have not \mt{yet} been updated after labeling guidelines have changed. The confusion between text and circles is a natural consequence of the overlap between geometric shapes and components of written text; it is not indicative of a lack of fit as much as a weakness in the classification system used to define the model.
 
-\autoref{fig:confusion_matrix} shows systematic errors in class predictions, but does not necessarily suggest \emph{why} the confusion is taking place. To assess the reasons for model failure, we look at the images to \fix{see what the model is seeing.}
+%\autoref{fig:confusion_matrix} shows systematic errors in class predictions, but does not necessarily suggest \emph{why} the confusion is taking place. To assess the reasons for model failure, we look at the images to \fix{see what the model is seeing.}
 
-\svp{I would move heatmaps up and out of the diagnostic section and transition into that, possibly}
+%\svp{I would move heatmaps up and out of the diagnostic section and transition into that, possibly}
 
-\svp{Three main model exploration chunks: consistency, heatmaps, brand (motivated by the fact that some classes perform so badly because the exemplars are so variable) - need to figure out the best sequence to transition}
+%\svp{Three main model exploration chunks: consistency, heatmaps, brand (motivated by the fact that some classes perform so badly because the exemplars are so variable) - need to figure out the best sequence to transition}
 
 \paragraph{Brand Investigations}
 
@@ -550,11 +553,9 @@ shapes %>% map_dfr(., function(x) {
   theme(legend.position = "none")
 @
 
-
-
 \paragraph{Model Diagnostics}
 
-A heatmap \fix{please add the technical name for heatmaps - look in the distill.io papers?} is a visual diagnostic tool that highlights the portions of an image that are most significant to classification for a given class. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image.
+Belonging to a category of techniques called class activation map (CAM) visualizations, a heatmap is a visual diagnostic tool that highlights the portions of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image.
 
 \fix{I picked the heatmaps I thought illustrated the point best, but didn't modify them heavily yet. How many do we want to include, and do we want to highlight model challenges or just focus on the point that CoNNOR sees what we see?} \svp{I think it's worth highlighting the fact that we'll never get a model that's perfect because that curly s is pretty much a circle, and there will always be weird shapes that partially activate different categories.}
 
