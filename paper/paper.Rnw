@@ -325,7 +325,8 @@ Overfitting is when a model learns the training data so well that its understand
   \item Show patterns in misclassification
   \item Motivates further understanding of common mistakes
   \end{itemize}
-\item Two main reasons for error: some classes are more variable, and some classes share physical features (I.e., the model has to learn a lot of features to encapsulate a class with lots of variety, but then other classes share those features)
+\item Three main reasons for error: image contrast, some classes are more variable, and some classes share physical features (I.e., the model has to learn a lot of features to encapsulate a class with lots of variety, but then other classes share those features)
+\item Contrast
 \item Brands
   \begin{itemize}
   \item Bowties/polygons/stars are mostly found in only a few brands, but the top N quad/line brands only take up a small proportion of all quads/lines (.04 or less)
@@ -424,7 +425,7 @@ pred_prob_plot(rev(circle_text), loaded_model, sort = F)
 mt{\paragraph{Accuracy by class}}
 \fix{Many of the trends in the examples in figures \ref{fig:single-exemplars}-\ref{fig:circle-text-consistency} are not unique. A confusion matrix is a type of visualization that summarizes the relationships between the labels assigned to an image and the labels predicted by the model, and is a helpful diagnostic tool to understand which classes are systematically misclassified.} \mt{The confusion matrix for \fix{our model} is presented in \autoref{fig:confusion_matrix}}. The values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; however, since a single image may truly contain multiple shapes, the values have been adjusted to remove the effect of any true positives from the calculation of false positive proportions.
 %\svp{As a result of this adjustment, the probabilities off-diagonal are the proportion ... need to explain the conditional probability we're showing here}
-\fix{As a result of this adjustment, the off-diagonal values are the proportion of images within a true class that are falsely labeled as containing another class that has not been identified in the image.}%\svp{I can't remember exactly how we're doing that, but we may want to look more closely at that - if we set everything to NA instead of 0, the rate calculations would be higher than expected}
+\fix{As a result of this adjustment, the off-diagonal values are the proportion of images within a true class that are falsely labeled as containing another class that has not been identified in the image. }%\svp{I can't remember exactly how we're doing that, but we may want to look more closely at that - if we set everything to NA instead of 0, the rate calculations would be higher than expected}
 For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any image that truly contains both triangles and quadrilaterals is removed before calculating the proportion of false quadrilateral labels.
 
 <<confusion_matrix, fig.width = 9, fig.height = 8, out.width = "\\textwidth", fig.cap = "Confusion matrix, showing on the diagonal the correct classification rate and on the off-diagonal, classification errors. Note that in multi-label images, correct off-diagonal labels have been excluded from the calculation of false positives.", fig.scap = "Confusion matrix, with correct and incorrect model classifications.", dpi = 600>>=
@@ -455,7 +456,7 @@ The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilater
 
 \paragraph{Brand Investigations}
 
-One possible explanation for the poor performance of some categories is the amount of variability within the shapes. \fix{For example, as seen in fig, a large proportion of bowties come from Birks; thus, the model learns bowties from Birks well, which leads to more accurate predictions of new bowtie images that come from Birks. There is no similar dominance in categories like quads. Instead, quads are highly variable  and come from a wide range of brands, so it is harder for the model to learn which set of features designate a quadrilateral. Since a large number of features are then associated with quads, the model gets more easily confused. When it sees some of those same features in other classes, it tries to guess quad. This is further explored in the next section.}
+One possible explanation for the poor performance of some categories is the amount of variability within the shapes. \fix{For example, as seen in \autoref{fig:brands-within-shapes}, a large proportion of bowties come from Birks; thus, the model learns bowties from Birks well, which leads to more accurate predictions of new bowtie images that come from Birks. There is no similar dominance in categories like quads. Instead, quads are highly variable  and come from a wide range of brands, so it is harder for the model to learn which set of features designate a quadrilateral. Since a large number of features are then associated with quads, the model gets more easily confused. When it sees some of those same features in other classes, it tries to guess quad. This is further explored in the next section.}
 
 \mt{That was a really quick and dirty version of what I'm trying to say... Am I missing any big points, before I try to expand it and clean up the technical part of the writing?}
 
@@ -557,12 +558,6 @@ shapes %>% map_dfr(., function(x) {
 @
 
 \paragraph{Model Diagnostics}
-
-Heatmaps
-  \begin{itemize}
-  \item Verify that the model is using appropriate features when predictions are correct
-  \item Show examples for confident misclassifications (like Seychelles), but make the case that the mistakes are understandable
-  \end{itemize}
 
 Belonging to a category of techniques called class activation map (CAM) visualizations, a heatmap is a visual diagnostic tool that highlights the portions of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image.
 
