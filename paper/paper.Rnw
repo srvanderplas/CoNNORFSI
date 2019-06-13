@@ -66,6 +66,7 @@ if ("paper" %in% list.files()) {
 
 codedir <- file.path(wd, "code")
 modeldir <- file.path(wd, "model")
+imgdir <- file.path(wd, "images")
 
 source(file.path(codedir, "Generate_Model_Images.R"))
 @
@@ -394,30 +395,37 @@ ggplot() +
 \paragraph{Model Predictions}
 \mt{The ROC curves provide only a general summary of model accuracy; to learn more about how specific images are classified, we can view images from the test set along with their respective nine model predictions.} \autoref{fig:single-exemplars} shows model predictions for images that contain only one type of shape, and \autoref{fig:multi-exemplars} shows similar predictions for images containing multiple shapes. Most predictions for the single-label images are straightforward; all of the archetypical shapes are corectly identified by the model, with only small confusions like those between quad/polygon and circle/text. \fix{A later section will discuss possible causes for this confusion.}
 
+<<eers, include = F>>=
+eers <- purrr::map_dbl(aucs$data$eer, function(x){x$thresholds}) %>%
+  setNames(classes)
+@
+
+
 <<single-exemplars, fig.cap = "Examples containing a single shape", fig.pos = "p!", out.width = "100%", cache = T>>=
-archetype <- list.files(file.path(wd, "images", "consistency", "single-exemplar"), full.names = T)
-pred_prob_plot(archetype, loaded_model, sort = F)
+single_exemplars <- list.files(file.path(wd, "images", "consistency",
+                                         "single-exemplar"), full.names = T)
+pred_prob_plot(single_exemplars, loaded_model, sort = F, eer = eers)
 @
 
 The multi-label images also perform quite well. \fix{Find a few more examples here and discuss them. Maybe a few similar ones to show consistency matters more than explicit label. Make the point that this task is messy and shape definitions are hard, but the model is doing pretty well given the circumstances.}
 
 <<multi-exemplars, fig.cap = "Examples containing multiple shapes", fig.pos = "p!", out.width = "100%", cache = T>>=
-exemplar <- list.files(file.path(wd, "images", "consistency", "multi-exemplar"), full.names = T)
-pred_prob_plot(exemplar, loaded_model)
+multi_exemplars <- list.files(file.path(wd, "images", "consistency", "multi-exemplar"), full.names = T)
+pred_prob_plot(multi_exemplars, loaded_model, eer = eers)
 @
 
 \fix{These figures provide representative examples of classifications across multiple categories; it is also useful to examine many cases within a given shape.} \mt{\autoref{fig:chevrons-consistency} shows a number of images containing chevrons. The top four rows show regularly repeating chevron patterns and seems to indicate that the model optimally identifies chevrons of a certain width; wide chevrons cross into the realm of bowties, whereas narrow chevrons become indistinguishable from lines. The next six rows show individual and closed chevrons. There is a significant amount of confusion between these wider chevrons and quadrilaterals. Finally, the bottom four rows show less-than-standard chevrons. The rounded chevron has a much lower prediction than those with sharper angles, but still exceeds the EER for chevron; the white chevrons are confounded with overlaid circles, which introduces a complexity that the model attributes to text.}
 
 <<chevrons-consistency, fig.cap = "Chevrons", fig.pos = "p!", out.width = "100%", cache = T>>=
 chevron <- list.files(file.path(wd, "images", "consistency", "chevron"), full.names = T)
-pred_prob_plot(rev(chevron), loaded_model, sort = F)
+pred_prob_plot(rev(chevron), loaded_model, sort = F, eer = eers)
 @
 
 \fix{Describe \autoref{fig:circle-text-consistency}...... The final two don't contain a true circle. IDK why the TOMS logo totally misses circle.}
 
 <<circle-text-consistency, fig.cap = "Text with circles or circle-like shapes", fig.pos = "p!", out.width = "100%", cache = T>>=
 circle_text <- list.files(file.path(wd, "images", "consistency", "circle-text"), full.names = T)
-pred_prob_plot(rev(circle_text), loaded_model, sort = F)
+pred_prob_plot(rev(circle_text), loaded_model, sort = F, eer = eers)
 @
 
 %\svp{Pros and cons of confusion matrix here? Maybe we just don't show the actual proportions on the graph? I'd like to discuss this more in person.}
@@ -453,6 +461,13 @@ The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilater
 %\svp{I would move heatmaps up and out of the diagnostic section and transition into that, possibly}
 
 %\svp{Three main model exploration chunks: consistency, heatmaps, brand (motivated by the fact that some classes perform so badly because the exemplars are so variable) - need to figure out the best sequence to transition}
+
+\paragraph{Contrast}
+
+<<low-contrast-consistency, fig.cap = "Images with low contrast, before and after correction", fig.pos = "p!", out.width = "100%", cache = T>>=
+lowcontrast <- list.files(file.path(wd, "images", "consistency", "low-contrast"), full.names = T)
+pred_prob_plot(lowcontrast, loaded_model, sort = F)
+@
 
 \paragraph{Brand Investigations}
 
@@ -559,13 +574,53 @@ shapes %>% map_dfr(., function(x) {
 
 \paragraph{Model Diagnostics}
 
-Belonging to a category of techniques called class activation map (CAM) visualizations, a heatmap is a visual diagnostic tool that highlights the portions of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image.
+Belonging to a category of techniques called class activation map (CAM) visualizations, a heatmap is a visual diagnostic tool that highlights the portions of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image. \fix{Many of these heatmaps illustrate that multiple classes share certain features, which understandably confuses the model.}
 
-\fix{I picked the heatmaps I thought illustrated the point best, but didn't modify them heavily yet. How many do we want to include, and do we want to highlight model challenges or just focus on the point that CoNNOR sees what we see?} \svp{I think it's worth highlighting the fact that we'll never get a model that's perfect because that curly s is pretty much a circle, and there will always be weird shapes that partially activate different categories.}
+%\fix{I picked the heatmaps I thought illustrated the point best, but didn't modify them heavily yet. How many do we want to include, and do we want to highlight model challenges or just focus on the point that CoNNOR sees what we see?} \svp{I think it's worth highlighting the fact that we'll never get a model that's perfect because that curly s is pretty much a circle, and there will always be weird shapes that partially activate different categories.}
 
-\svp{We may want to explore using the border of the square to show whether the model actually assigns that label - like the bullet plots}
+\fix{Susan, please generate these heatmaps and move them to the "static" folder. My computer still has issues with the transparent layer of the heatmap, so it's probably easiest to do what we did for my CC and have you generate the images so they turn out correctly. Once I can see them all, I'll decide which three heatmaps best illustrate the point that shape categories have similar features that (understandably) confuse the model and I'll write about those specific heatmaps.}
+
+<<setup-heatmap>>=
+imgs <- list.files(file.path(wd, "images", "heatmaps", "raw"), full.names = T)
+@
+
+<<generate-heatmaps, echo = F>>=
+# My computer has troubles with the transparency of the overlay...
+# This code is functional, but highest quality will come from generating these
+# images on Bigfoot and loading them statically.
+
+h_imgdir <- file.path(imgdir, "heatmaps", "processed")
+if(!dir.exists(h_imgdir)) {dir.create(h_imgdir)}
+
+calc_heatmap(imgs[which(grepl("chevron-circle", imgs))], loaded_model) %>%
+  prune_heatmap(c("chevron", "quad", "circle")) %>%
+  create_composite(save_file = T, outdir = h_imgdir)
+
+calc_heatmap(imgs[which(grepl("corks", imgs))], loaded_model) %>%
+  prune_heatmap(c("star", "text", "circle")) %>%
+  create_composite(save_file = T, outdir = h_imgdir)
+
+calc_heatmap(imgs[which(grepl("text", imgs))], loaded_model) %>%
+  prune_heatmap(c("text", "circle", "line")) %>%
+  create_composite(save_file = T, outdir = h_imgdir)
+
+calc_heatmap(imgs[which(grepl("triangle", imgs))], loaded_model) %>%
+  prune_heatmap(c("triangle", "quad", "chevron")) %>%
+  create_composite(save_file = T, outdir = h_imgdir)
+
+calc_heatmap(imgs[which(grepl("star", imgs))], loaded_model) %>%
+  prune_heatmap(c("star", "bowtie", "polygon")) %>%
+  create_composite(save_file = T, outdir = h_imgdir)
+
+calc_heatmap(imgs[which(grepl("polygon", imgs))], loaded_model) %>%
+  prune_heatmap(c("star", "chevron", "polygon")) %>%
+  create_composite(save_file = T, outdir = h_imgdir)
+
+heatmaps <- list.files(imgdir, pattern = "^heatmap")
+@
+
 <<chevron-circle-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing chevrons and circles.", fig.cap = "Chevrons are identified by sharp corners and parallel lines, but the thick line between the two shape sections is falsely identified as a quadrilateral.", fig.pos = "!h">>=
-heatmaps <- list.files(file.path(wd, "images", "heatmaps"),
+heatmaps <- list.files(file.path(wd, "images", "heatmaps", "static"),
                        pattern = "^heatmap", full.names = T)
 knitr::include_graphics(heatmaps[grepl("chevron-circle", heatmaps)])
 @
@@ -581,6 +636,7 @@ knitr::include_graphics(heatmaps[grepl("corks", heatmaps)])
 
 \section{Conclusions}
 \svp{Rework this to address 3 main conclusions - 1: NNs work for automatic feature ID, 2: Different levels of feature variability within classes, and 3: correcting for contrast is important.}
+\mt{I'll do this once Results is stable, so I can make it match the rest of the story.}
 The goal of this research was to develop a method to automatically identify geometric class characteristics of shoe outsoles. Such a method takes the ``impossible" problem of quantifying outsole features in a given population and lays the groundwork for a tractable solution. A set of geometric class characteristics was defined to both broadly classify a large variety of shoes and to narrow down similarity into a manageable number and type of features for further use in a shoeprint analysis. The final set of features used in this research achieves both goals quite well, and has potential for much finer-grained analysis when recognized features are combined with spatial information and relationships.
 
 CoNNOR was developed using the convolutional base of VGG16 and a newly trained classifier/head to identify the defined set of geometric features. After training, CoNNOR performs well on the data provided. In general, the model is able to identify many well-defined geometric shapes in the images both consistently and accurately. The prediction accuracy of this model provides the ability to compute statistics for the frequency of given features in a well-defined population.
