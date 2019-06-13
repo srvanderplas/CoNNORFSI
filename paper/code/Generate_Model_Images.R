@@ -92,7 +92,13 @@ predict_new <- function(img_path, model, classes = default_classes) {
   })
 }
 
-pred_prob_plot <- function(img_path, model, classes = default_classes, sort = T) {
+pred_prob_plot <- function(img_path, model, classes = default_classes,
+                           sort = T, eer = NULL) {
+  if(!is.null(eer)) {
+    assertthat::assert_that(is.numeric(eer))
+    assertthat::assert_that(length(eer) == length(classes))
+  }
+
   img_preds <- predict_new(img_path, model)
 
   img_preds_mat <- purrr::map_dfc(img_preds, "pred") %>%
@@ -114,25 +120,58 @@ pred_prob_plot <- function(img_path, model, classes = default_classes, sort = T)
       mutate(idx = row_number())
   }
 
+  if(is.null(eer)) {
+    eer <- rep(1, length(classes))
+  }
+
+  above_eer <- apply(as.matrix(img_preds_df)[,classes], 1, function(x){
+      as.numeric(as.numeric(x) > eer)
+    }) %>% t() %>% set_colnames(classes) %>%
+      as.data.frame() %>%
+      cbind(., idx = img_preds_df$idx) %>%
+      gather(key = "class", value = "yes", -idx)
+
   img_preds_df_long <- img_preds_df %>%
     select(idx, 1:length(classes)) %>%
     gather(key = "class", value = value, -idx)
 
+  img_preds_df_long <- merge(img_preds_df_long, above_eer,
+                             by = c("class", "idx"))
+  img_preds_df_long$fill <- img_preds_df_long$value + img_preds_df_long$yes
+
   features_xraster <- purrr::map2(img_preds_df$path, img_preds_df$idx,
                                   ~annotation_custom(grid::rasterGrob(readJPEG(.x), interpolate = T),
-                                                     ymin = .y - .5, ymax = .y + .5,
-                                                     xmin = -0.5, xmax = 0.5))
+                                                     ymin = .y - .5,
+                                                     ymax = .y + .5,
+                                                     xmin = -0.5,
+                                                     xmax = 0.5))
+
+  if(sum(eer) == length(classes)) {
+    cols <- c("0" = "black", "1" = "black")
+    w <- h <- 1
+  } else {
+    cols <- c("0" = "white", "1" = "navyblue")
+    w <- h <- .975
+  }
 
   ggplot() +
-    geom_tile(aes(y = idx, x = as.numeric(factor(class)), fill = value), data = img_preds_df_long, color = "black") +
-    geom_text(aes(x = as.numeric(factor(class)), y = idx, label = sprintf("%0.2f", value)), data = img_preds_df_long, hjust = 0.5, vjust = 0.5) +
-    scale_fill_gradient("Predicted\nProbability", low = "#FFFFFF", high = "cornflowerblue", limits = c(0, 1)) +
+    geom_tile(aes(y = idx, x = as.numeric(factor(class)),
+                  fill = value, color = factor(yes),
+                  width = w, height = h),
+              data = img_preds_df_long) +
+    geom_text(aes(x = as.numeric(factor(class)), y = idx,
+                  label = sprintf("%0.2f", value)), data = img_preds_df_long,
+              hjust = 0.5, vjust = 0.5) +
+    scale_fill_gradient("Predicted\nProbability", low = "white",
+                        high = "cornflowerblue",limits = c(0, 1)) +
+    scale_color_manual(values = cols, guide = "none") +
     features_xraster +
     coord_fixed() +
-    scale_x_continuous(limits = c(-0.5, 9.5), breaks = 1:9, labels = default_classes, expand = c(0,0)) +
+    scale_x_continuous(limits = c(-0.5, 9.5), breaks = 1:9,
+                       labels = default_classes, expand = c(0,0)) +
     scale_y_continuous(limits = c(.5, length(img_path) + .5), expand = c(0,0)) +
-    theme(axis.text.y = element_blank(), axis.title = element_blank(), axis.ticks.y = element_blank())
-
+    theme(axis.text.y = element_blank(), axis.title = element_blank(),
+          axis.ticks.y = element_blank())
 }
 
 # --- # Heatmaps # -------------------------------------------------------------
@@ -171,7 +210,7 @@ calc_heatmap <- function(img_path, model, classes = default_classes, scale_by_pr
     tmp <- iterate(list(img))
     pooled_grads_value <- tmp[[1]]
     conv_layer_output_value <- tmp[[2]]
-    
+
     # c(pooled_grads_value, conv_layer_output_value) %<-% iterate(list(img))
     for (i in 1:512) {
       conv_layer_output_value[,,i] <-
@@ -549,11 +588,11 @@ plot_deepviz_sample <- function(n, dropout_rate = .5, edge_col = c("grey50", "gr
 }
 
 
-plot_deepviz_arrows <- function(n, edge_col = "grey50", 
+plot_deepviz_arrows <- function(n, edge_col = "grey50",
                                 line_type = "solid", rad = .1){
   nodes <- make_nodes_df(n)
   edges <- make_edges_df(n)
-  
+
   tbl_graph(nodes = nodes, edges = edges) %>%
     ggraph(layout = "manual", node.position = layout_keras(., n)) +
     geom_edge_link(edge_colour = edge_col, linetype = line_type,
@@ -568,10 +607,10 @@ plot_deepviz_arrows <- function(n, edge_col = "grey50",
 plot_deepviz_dropout <- function(n, rm_nodes, cross_out = F, r = .1) {
   nodes <- make_nodes_df(n)
   edges <- make_edges_df(n)
-  
+
   rm_rows <- (edges$from %in% rm_nodes) | (edges$to %in% rm_nodes)
   edges <- edges[!rm_rows,]
-  
+
   plot <- tbl_graph(nodes = nodes, edges = edges) %>%
     ggraph(layout = "manual", node.position = layout_keras(., n)) +
     geom_edge_link(edge_colour = "grey50", linetype = "solid",
@@ -588,7 +627,7 @@ plot_deepviz_dropout <- function(n, rm_nodes, cross_out = F, r = .1) {
     centers$xu <- centers$x + d
     centers$yl <- centers$y - d
     centers$yu <- centers$y + d
-    plot + 
+    plot +
       geom_segment(aes(x = xl, xend = xu, y = yl, yend = yu),
                    data = centers, size = .7) +
       geom_segment(aes(x = xu, xend = xl, y = yl, yend = yu),
