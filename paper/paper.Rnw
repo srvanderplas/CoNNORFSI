@@ -74,7 +74,11 @@ source(file.path(codedir, "Generate_Model_Images.R"))
 <<labeled-data-setup, include = F>>=
 model_path <- file.path(modeldir, "TrainedModels")
 
-newest_model <- get_newest(dir = model_path, pattern = "weights.h5")
+# newest_model <- get_newest(dir = model_path, pattern = "weights.h5")
+newest_model <- list(path = file.path(model_path, "20190514-155453"),
+    base_file = "2019-05-14_19:45:22_vgg16_onehotaug_9class_256-weights.h5",
+    prefix = "vgg16_onehotaug_9class_256", start_date = "2019-05-14_19:45:22",
+    process_dir = "20190514-155453")
 newest_data_file <- file.path(modeldir, "RProcessedImages",
                               newest_model$process_dir, "cropped_photos.Rdata")
 
