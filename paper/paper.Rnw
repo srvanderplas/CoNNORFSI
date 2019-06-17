@@ -74,7 +74,11 @@ source(file.path(codedir, "Generate_Model_Images.R"))
 <<labeled-data-setup, include = F>>=
 model_path <- file.path(modeldir, "TrainedModels")
 
-newest_model <- get_newest(dir = model_path, pattern = "weights.h5")
+# newest_model <- get_newest(dir = model_path, pattern = "weights.h5")
+newest_model <- list(path = file.path(model_path, "20190514-155453"),
+    base_file = "2019-05-14_19:45:22_vgg16_onehotaug_9class_256-weights.h5",
+    prefix = "vgg16_onehotaug_9class_256", start_date = "2019-05-14_19:45:22",
+    process_dir = "20190514-155453")
 newest_data_file <- file.path(modeldir, "RProcessedImages",
                               newest_model$process_dir, "cropped_photos.Rdata")
 
@@ -195,7 +199,7 @@ In this paper, we demonstrate the use of transfer learning to automatically iden
 
 \paragraph{Annotated Training Data}
 
-Class characteristics are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes (e.g., all shoes of a specific brand and size). A sufficiently well-defined set of features can be used to separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}; the set of features used in that study included circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. After consulting with practitioners, we developed a set of categories suitable for automatic recognition by convolutional neural networks. These modifications were necessary because some of the definitions used in \citet{grossVariabilitySignificanceClass2013} require contextual spatial information which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class.
+Class characteristics are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes (e.g., all shoes of a specific brand and size). A sufficiently well-defined set of features can be used to separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}; the set of features used in that study included circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. After consulting with practitioners, we developed a set of categories suitable for automatic recognition by convolutional neural networks. These modifications were necessary because some of the definitions used in \citeauthor{grossVariabilitySignificanceClass2013} require contextual spatial information which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class.
 
 The categories we use in this study are operationally defined as follows:
 \begin{description}
@@ -229,7 +233,7 @@ The categories we use in this study are operationally defined as follows:
 \caption[Geometric elements used to classify tread patterns.]{A set of geometric elements used to classify tread patterns. Categories modified from \cite{grossVariabilitySignificanceClass2013}.}\label{tab:class-char-examples}
 \end{table}
 
-Thousands of outsole images were scraped from online shoe retail sites and annotated using LabelMe, a tool for image annotation in computer vision problems \citep{labelme}. After annotation, images are processed by an R script that identifies the minimum bounding rectangle of the region, crops the image to that region, and scales the cropped area to a 256 x 256 pixel image suitable for analysis by the convolutional neural network. During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
+Thousands of outsole images were scraped from online shoe retail sites and annotated using LabelMe, a tool for image annotation in computer vision problems \citep{labelme}. After annotation, the minimum bounding rectangle of the region \svp{is identified and the image is cropped to that area; subsequently, the cropped image is scaled to 256 x 256 pixels.} During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
 
 \begin{figure}[hbt]
 \centering
@@ -276,12 +280,14 @@ Transfer learning substantially reduces the amount of data required to train a C
 Model training is analogous to the human learning process. For example, a child learns to identify dogs by being presented with many labeled examples, such as when their parent uses the label ``dog" for an animal walking by. That child's understanding of dogs is then measured by how many dogs the child is able to correctly identify, and also by the number of other animals it mistakenly calls ``dog". Similarly, CNN training is a series of stages, or ``epochs", where the model learns from the set of labeled training data, and that learning is measured through intermediate predictions on validation data.
 
 The \Sexpr{nrow(dfunion)} images were split such that 60\% were used for training. Since the categories do not exist in equal proportion in the labeled data,
-the training data were weighted by proportion during the training process to ensure that the model can identify both rare and common geometric shapes. Of the remaining 40\% of data, half were used for validation, to monitor the training process, and the remaining data were for testing the performance of the fitted model.
+the training data were weighted by proportion during the training process to ensure that the model can identify both rare and common geometric shapes. Of the remaining 40\% of data, half were used for validation, to monitor the training process, and the remaining data were for testing the performance of the final model.
 
 \svp{This section header might need to move? Haven't decided yet...}
 \section{Results}
 
 \subsection{Model Training}
+\svp{During model fitting, the model ``learns" from the training set and is evaluated on the validation set, which consists of previously unseen images (e.g. images not used during the training process). Learning occurs by minimization of the ``Loss", which is a function of the distance between the model predictions and the image labels. As the loss decreases, the model's accuracy (the proportion of correct labels) increases.  During model training, we expect that the accuracy for the training set will increase beyond the accuracy for the validation set; the validation accuracy will eventually level off. Similarly, we expect the loss for the training set and the validation set to decrease initially.} \autoref{fig:training-accuracy} shows the training and validation accuracy and loss at each epoch of the fitting process.
+% In machine learning, a loss function is a function that measures how far model predictions are from the given labels for each image in the validation and test sets; the model ``learns" by updating its predictions to minimize the loss. \autoref{fig:training-accuracy} shows the training and validation accuracy and loss at each epoch of the fitting process.
 <<training-accuracy, fig.width = 7.5, fig.height = 5, out.width = ".75\\textwidth", fig.cap = "Training and validation accuracy and loss for each epoch of the fitting process. Training and validation accuracy reach 89.5\\% around epoch 9. After that point, validation loss remains the same and training loss decreases slightly, while validation accuracy increases more slowly than training accuracy.", fig.scap = "Training and validation accuracy and loss during each epoch.", fig.pos = 'h'>>=
 data.frame(history$metrics) %>%
   mutate(epoch = 1:n()) %>%
@@ -303,7 +309,6 @@ data.frame(history$metrics) %>%
         legend.background = element_rect(fill = "white"))
 @
 
-In machine learning, a loss function is a function that measures how far model predictions are from the given labels for each image in the validation and test sets; the model ``learns" by updating its predictions to minimize the loss. \autoref{fig:training-accuracy} shows the training and validation accuracy and loss at each epoch of the fitting process.
 
 Overfitting is when a model learns the training data so well that its understanding of the categories becomes specific to the training cases, which, in turn, leads to poor prediction of new images that were not in the training set. During the training process, overfitting is indicated when the validation loss begins to increase after reaching a global minimum. Alternately, underfitting occurs if the validation accuracy is still increasing when model optimization is terminated (for instance, between epochs 1 and 10 in \autoref{fig:training-accuracy}), because model performance is still improving with continued training. In \autoref{fig:training-accuracy}, validation accuracy levels off after epoch 20, and validation loss has not yet begun to increase at epoch 30, indicating that the model optimization process was halted at an appropriate epoch.
 
@@ -520,69 +525,37 @@ df_shoes <- df_images %>%
   group_by(str, brand) %>%
   summarize_at(vars(bowtie:triangle), any)
 
-top_brands <- df_shoes %>%
-  group_by(brand) %>%
-  summarize(n = n()) %>%
-  arrange(desc(n))
+df_shoes_long <- df_shoes %>%
+  tidyr::gather(key = feature, value = value, -str, -brand) %>%
+  ungroup() %>%
+  tidyr::nest(c(str, value)) %>%
+  mutate(n_true = purrr::map_int(data, ~sum(.$value)),
+         n_shoes_brand = purrr::map_int(data, ~length(.$value)))
 
-df_summ <- filter(df_shoes, brand %in% head(top_brands$brand, 8)) %>%
-  group_by(brand) %>%
-  summarize(n = n(),
-            bowtie = sum(bowtie)/n, chevron = sum(chevron)/n,
-            circle = sum(circle)/n, line = sum(line)/n,
-            polygon = sum(polygon)/n, quad = sum(quad)/n,
-            star = sum(star)/n, text = sum(text)/n, triangle = sum(triangle)/n)
+brand_prop_by_feature <- df_shoes_long %>%
+  group_by(feature) %>%
+  mutate(prop = n_true/sum(n_true)) %>%
+  arrange(feature, desc(prop)) %>%
+  mutate(brand_cat = ifelse(row_number() <= 10, brand, "other")) %>%
+  group_by(feature) %>%
+  mutate(rank = pmin(row_number(), 11))
+brand_prop_by_feature_10 <- brand_prop_by_feature %>%
+  group_by(feature, brand_cat, rank) %>%
+  summarize(prop = sum(prop)) %>%
+  ungroup() %>%
+  group_by(feature) %>%
+  arrange(feature, rank) %>%
+  mutate(cprop = cumsum(prop),
+         cprop2 = lag(cprop, 1, default = 0),
+         mid = (cprop + cprop2)/2,
+         rank = ifelse(rank == 11, NA, rank))
 
-df_summ_long <- df_summ %>%
-  gather(key = shape, value = prop, -brand, -n) %>%
-  arrange(brand)
-
-df_summ_long$brand <- as.factor(df_summ_long$brand)
-df_summ_long$shape <- factor(df_summ_long$shape, levels = classes)
-
-# # Line plot
-# ggplot(df_summ_long) + geom_point(aes(x = prop, y = shape, color = brand)) +
-#   geom_path(aes(x = prop, y = shape, group = brand, color = brand)) +
-#   ggtitle("Shape proportions by brand")
-
-# unicode_symbols <- c(bowtie = "\u26FB", chevron = "\uFE3D",
-#                      circle =  "\u23FA", line = "\u2225",
-#                      polygon = "\u2B23", quad = "\u25A0",
-#                      star = "\u2605", text = "a", triangle = "\u25BC",
-#                      other = "\u003F")
-
-ggplot(df_summ_long, aes(x = brand, y = prop, shape = factor(shape),
-                         color = factor(shape))) +
-  geom_point(size = 4) +
-  scale_shape_manual(values = c("\u26FB","\uFE3D","\u23FA","\u2225",
-                                "\u2B23","\u25A0","\u2605","a","\u25BC")) +
-  theme_bw() +
-  theme(legend.position = "none") +
-  coord_flip() +
-  ggtitle("Proportion of labeled shoes containing each shape by brand")
-@
-
-<<brands-within-shapes, fig.cap = "Caption here">>=
-shapes <- lapply(X = classes, function(x){
-  out <- df_shoes[df_shoes[,x, drop = T],]
-  out$shape <- x
-  out
-})
-names(shapes) <- classes
-
-shapes %>% map_dfr(., function(x) {
-  x %>% group_by(brand) %>%
-    summarize(n = n()) %>%
-    arrange(desc(n)) %>%
-    mutate(prop = n / sum(n),
-           shape = x$shape[1:length(n)]) %>%
-    head(10)
-  }) %>%
-  ggplot() +
-  geom_text(aes(x = as.factor(shape),
-                               y = prop, label = brand,
-                               color = as.factor(shape))) +
-  theme(legend.position = "none")
+ggplot(data = brand_prop_by_feature_10) +
+  geom_bar(aes(x = feature, y = prop, fill = factor(rank)), position = "stack", stat = "identity", color = "black") +
+  geom_text(aes(x = feature, y = 1-mid, label = brand_cat), data = filter(brand_prop_by_feature_10, prop > .05), size = 3) +
+  scale_fill_brewer(palette = "Paired", guide = F, na.value = "grey") +
+  scale_y_continuous("Proportion") + scale_x_discrete("") +
+  ggtitle("Proportion of Labeled Features by Brand")
 @
 
 \paragraph{Model Diagnostics}
