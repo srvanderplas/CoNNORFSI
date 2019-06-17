@@ -412,14 +412,12 @@ eers <- purrr::map_dbl(aucs$data$eer, function(x){x$thresholds}) %>%
 <<single-exemplars, fig.cap = "Examples containing a single shape", fig.pos = "p!", out.width = "100%", cache = T>>=
 single_exemplars <- list.files(file.path(wd, "images", "consistency",
                                          "single-exemplar"), full.names = T)
-pred_prob_plot(single_exemplars, loaded_model, sort = F, eer = eers)
-@
-
-<<multi-exemplars, fig.cap = "Examples containing multiple shapes", fig.pos = "p!", out.width = "100%", cache = T>>=
 multi_exemplars <- list.files(file.path(wd, "images", "consistency",
                                         "multi-exemplar"), full.names = T)
-pred_prob_plot(rev(multi_exemplars), loaded_model, sort = F, eer = eers)
+pred_prob_plot(rev(c(single_exemplars, multi_exemplars)),
+               loaded_model, sort = F, eer = eers)
 @
+
 
 \fix{Figures \ref{fig:single-exemplars} and \ref{fig:multi-exemplars} provide representative examples of classifications across multiple categories; it is also useful to examine many cases within a given shape.} \autoref{fig:chevrons-consistency} shows a number of images containing chevrons. The top four rows show regularly repeating chevron patterns and seems to indicate that the model optimally identifies chevrons of a certain width; wide chevrons cross into the realm of bowties, whereas narrow chevrons become indistinguishable from lines. The next six rows show individual and closed chevrons. There is a significant amount of confusion between these wider chevrons and quadrilaterals. Finally, the bottom four rows show less-than-standard chevrons. The rounded chevron has a much lower prediction than those with sharper angles, but still exceeds the EER for chevron; the white chevrons are confounded with overlaid circles, which introduces a complexity that the model attributes to text.
 
