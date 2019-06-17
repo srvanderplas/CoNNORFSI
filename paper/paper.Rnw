@@ -339,13 +339,13 @@ Overfitting is when a model learns the training data so well that its understand
   \item Verify that the model is using appropriate features when predictions are correct
   \item Show examples for confident misclassifications (like Seychelles), but make the case that the mistakes are understandable
   \end{itemize}
+  \item (IDK where to put this, but I think it's a really important point that consistency matters more than accuracy. As long as a shape is predicted consistently, that provides information about outsole similarity, even if it's not 100\% correct. But, if phrased wrong, this undermines the claim that our model can replicate the feature detection examiners are doing...)
 \end{itemize}
 }
 
 \paragraph{Overall Accuracy}
 
-For each image in the test set, the ``true" labels are nine human-assigned labels of 0 or 1 corresponding to the presence or absence of each of the nine shape categories in the image. When the CNN predicts which shapes are in the image, however, it assigns a probability between 0 and 1 for each shape category, with a total of nine probabilities per test image. Thus, to determine the accuracy of the model predictions, we must select a threshold for each label to discretize the model predictions.
-If the threshold is too high, \fix{moderate} probabilities will be treated as a ``no", which increases the number of true negative and false negative predictions. Conversely, if the threshold is too low, \fix{moderate} probabilites will be considered as ``yes", which increases the true and false positive predictions in the data. An appropriate threshold must be chosen to produce a high true positive rate while also ideally keeping the false positive rate low.
+For each image in the test set, the ``true" labels are nine human-assigned labels of 0 or 1 corresponding to the presence or absence of each of the nine shape categories in the image. When the CNN predicts which shapes are in the image, however, it assigns a probability between 0 and 1 for each shape category, with a total of nine probabilities per test image. Thus, to determine the accuracy of the model predictions, we must select a threshold for each label to discretize the model predictions. If the threshold is too low, moderate probabilites will \mt{always meet the threshold}, which increases the true positive and false positive predictions in the test data. Conversely, if the threshold is too high, moderate probabilities will \mt{fail to meet the threshold,} which increases the number of true and false negative predictions. An appropriate threshold must be chosen to produce a high true positive rate while also ideally keeping the false positive rate low. \mt{Is it worth introducing the acronyms TPR and FPR?}
 
 Receiver Operating Characteristic (ROC) curves are a type diagnostic plot which compare the false positive rate to the true positive rate for a classification method, and the Area Under the Curve (AUC) \svp{is a summary measure which} quantifies the \svp{overall accuracy of the model}. %It doesn't really summarize the shape - you can have very different shapes of curves with the same AUC value.
 Perfect prediction would be indicated by a right angle along the upper left corner of the plot, with a corresponding AUC of 1, and a diagonal line with an AUC of 0.5 would indicate that the classification method performs no better than random chance. \autoref{fig:overall-roc} shows the ROC curve for \fix{the model} across all classes, and \autoref{fig:class-roc} shows the curve for each class. The full model has an AUC of 0.88, and the AUC for individual classes ranges from 0.81 (for lines) to 0.91 (for bowtie and text). \fix{pull these numbers out of the model using \\Sexpr} While the class performances do vary slightly, each ROC curve is the same general shape and performs significantly better than random chance. The points in \autoref{fig:class-roc} represent the equal error rate (EER), which is the threshold where there is equal probability of a false positive or false negative error. We will use the class-wise EER to set a threshold corresponding to each class, so that any model prediction with probability above the EER for that shape is considered a positive prediction.
@@ -363,15 +363,22 @@ whole_model_roc_df <- tibble(tpr = whole_model_roc$sensitivities,
   nest(tpr, fpr, thresholds, .key =  "roc_plot") %>%
   mutate(eer = purrr::map(roc_plot, eer))
 ggplot() +
-  geom_line(aes(x = fpr, y = tpr), data = unnest(whole_model_roc_df, roc_plot), size = 1.25) +
-  geom_label(aes(x = 1, y = .07, label = sprintf("AUC: %0.2f", auc)), hjust = 1, vjust = -0.2, data = whole_model_roc_df) +
-  geom_point(aes(x = fpr, y = tpr, color = "Equal Error Rate"), data = unnest(whole_model_roc_df, eer), size = 2) +
+  geom_line(aes(x = fpr, y = tpr), data = unnest(whole_model_roc_df, roc_plot),
+            size = 1.25) +
+  geom_label(aes(x = 1, y = .07, label = sprintf("AUC: %0.2f", auc)), hjust = 1,
+             vjust = -0.2, data = whole_model_roc_df) +
+  geom_point(aes(x = fpr, y = tpr, color = "Equal Error Rate"),
+             data = unnest(whole_model_roc_df, eer), size = 2) +
   scale_color_manual("", values = "black") +
-  scale_x_continuous("False Positive Rate", breaks = c(0, .25, .5, .75, 1), labels = c("0.0", "", "0.5", "", "1.0")) +
-  scale_y_continuous("True Positive Rate", breaks = c(0, .25, .5, .75, 1), labels = c("0.0", "", "0.5", "", "1.0")) +
+  scale_x_continuous("False Positive Rate", breaks = c(0, .25, .5, .75, 1),
+                     labels = c("0.0", "", "0.5", "", "1.0")) +
+  scale_y_continuous("True Positive Rate", breaks = c(0, .25, .5, .75, 1),
+                     labels = c("0.0", "", "0.5", "", "1.0")) +
   ggtitle("CoNNOR Test Set Performance (All Classes)") +
   coord_fixed() + mytheme +
-  theme(legend.position = c(1, 0), legend.justification = c(1.01, -0.01), legend.title = element_blank(), legend.background = element_rect(fill = "white"))
+  theme(legend.position = c(1, 0), legend.justification = c(1.01, -0.01),
+        legend.title = element_blank(),
+        legend.background = element_rect(fill = "white"))
 
 @
 
@@ -395,13 +402,12 @@ ggplot() +
 @
 
 \paragraph{Model Predictions}
-The ROC curves provide only a general summary of model accuracy; to learn more about how specific images are classified, we can examine images from the test set along with their respective nine model predictions. \autoref{fig:single-exemplars} shows model predictions for images that contain only one type of shape, and \autoref{fig:multi-exemplars} shows similar predictions for images containing multiple shapes. Most predictions for the single-label images are straightforward; all of the archetypical shapes are corectly identified by the model, with only small confusions like those between quad/polygon and circle/text. \fix{A later section will discuss possible causes for this confusion.}
+The ROC curves provide only a general summary of model accuracy; to learn more about how specific images are classified, we can view images from the test set along with their respective nine model predictions. \autoref{fig:single-exemplars} shows model predictions for images that contain only one type of shape, and \autoref{fig:multi-exemplars} shows predictions for images containing multiple shapes. Most predictions for the single-class images are \fix{promising}; there are some confusions between circle/text and polygon/quad, but all of the true shapes are corectly identified by the model. \fix{The multi-label images also perform quite well; again, true labels are almost all present, with a small number of false positive labels. [Expand on specific cases more, once determining how many examples to keep and how much to highlight errors.] A later section will discuss possible causes for these class confusions.}
 
 <<eers, include = F>>=
 eers <- purrr::map_dbl(aucs$data$eer, function(x){x$thresholds}) %>%
   setNames(classes)
 @
-
 
 <<single-exemplars, fig.cap = "Examples containing a single shape", fig.pos = "p!", out.width = "100%", cache = T>>=
 single_exemplars <- list.files(file.path(wd, "images", "consistency",
@@ -409,14 +415,13 @@ single_exemplars <- list.files(file.path(wd, "images", "consistency",
 pred_prob_plot(single_exemplars, loaded_model, sort = F, eer = eers)
 @
 
-The multi-label images also perform quite well. \fix{Find a few more examples here and discuss them. Maybe a few similar ones to show consistency matters more than explicit label. Make the point that this task is messy and shape definitions are hard, but the model is doing pretty well given the circumstances.}
-
 <<multi-exemplars, fig.cap = "Examples containing multiple shapes", fig.pos = "p!", out.width = "100%", cache = T>>=
-multi_exemplars <- list.files(file.path(wd, "images", "consistency", "multi-exemplar"), full.names = T)
-pred_prob_plot(multi_exemplars, loaded_model, eer = eers)
+multi_exemplars <- list.files(file.path(wd, "images", "consistency",
+                                        "multi-exemplar"), full.names = T)
+pred_prob_plot(rev(multi_exemplars), loaded_model, sort = F, eer = eers)
 @
 
-\fix{These figures provide representative examples of classifications across multiple categories; it is also useful to examine many cases within a given shape.} \autoref{fig:chevrons-consistency} shows a number of images containing chevrons. The top four rows show regularly repeating chevron patterns and seems to indicate that the model optimally identifies chevrons of a certain width; wide chevrons cross into the realm of bowties, whereas narrow chevrons become indistinguishable from lines. The next six rows show individual and closed chevrons. There is a significant amount of confusion between these wider chevrons and quadrilaterals. Finally, the bottom four rows show less-than-standard chevrons. The rounded chevron has a much lower prediction than those with sharper angles, but still exceeds the EER for chevron; the white chevrons are confounded with overlaid circles, which introduces a complexity that the model attributes to text.
+\fix{Figures \ref{fig:single-exemplars} and \ref{multi-exemplars} provide representative examples of classifications across multiple categories; it is also useful to examine many cases within a given shape.} \autoref{fig:chevrons-consistency} shows a number of images containing chevrons. The top four rows show regularly repeating chevron patterns and seems to indicate that the model optimally identifies chevrons of a certain width; wide chevrons cross into the realm of bowties, whereas narrow chevrons become indistinguishable from lines. The next six rows show individual and closed chevrons. There is a significant amount of confusion between these wider chevrons and quadrilaterals. Finally, the bottom four rows show less-than-standard chevrons. The rounded chevron has a much lower prediction than those with sharper angles, but still exceeds the EER for chevron; the white chevrons are confounded with overlaid circles, which introduces a complexity that the model attributes to text.
 
 <<chevrons-consistency, fig.cap = "Chevrons", fig.pos = "p!", out.width = "100%", cache = T>>=
 chevron <- list.files(file.path(wd, "images", "consistency", "chevron"), full.names = T)
@@ -425,18 +430,25 @@ pred_prob_plot(rev(chevron), loaded_model, sort = F, eer = eers)
 
 \fix{Describe \autoref{fig:circle-text-consistency}...... The final two don't contain a true circle. IDK why the TOMS logo totally misses circle.}
 
+\mt{If We end up making the claim that consistency matters more than accuracy, we can use \autoref{fig:ugg-consistency} to show that consistently predicting line isn't strictly right but does establish similarity between the images. If we don't emphasize the consistency point as much, the ugg plot is overkill.}
+
 <<circle-text-consistency, fig.cap = "Text with circles or circle-like shapes", fig.pos = "p!", out.width = "100%", cache = T>>=
 circle_text <- list.files(file.path(wd, "images", "consistency", "circle-text"), full.names = T)
 pred_prob_plot(rev(circle_text), loaded_model, sort = F, eer = eers)
 @
 
+<<ugg-consistency, fig.cap = "Text with circles or circle-like shapes", fig.pos = "p!", out.width = "100%", cache = T>>=
+ugg <- list.files(file.path(wd, "images", "consistency", "ugg-star-logo"), full.names = T)
+pred_prob_plot(rev(ugg), loaded_model, sort = F, eer = eers)
+@
+
 %\svp{Pros and cons of confusion matrix here? Maybe we just don't show the actual proportions on the graph? I'd like to discuss this more in person.}
 
-mt{\paragraph{Accuracy by class}}
-\fix{Many of the trends in the examples in figures \ref{fig:single-exemplars}-\ref{fig:circle-text-consistency} are not unique. A confusion matrix is a type of visualization that summarizes the relationships between the labels assigned to an image and the labels predicted by the model, and is a helpful diagnostic tool to understand which classes are systematically misclassified.} \mt{The confusion matrix for \fix{our model} is presented in \autoref{fig:confusion_matrix}}. The values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; however, since a single image may truly contain multiple shapes, the values have been adjusted to remove the effect of any true positives from the calculation of false positive proportions.
+\mt{\paragraph{Accuracy by class}}
+\fix{Figures \ref{fig:single-exemplars}-\ref{fig:circle-text-consistency} show predictions for a number of individual images. Many of the misclassifications in these examples are not just seen in individual images, but rather exist systematically in a class.} A confusion matrix is a type of visualization that summarizes the relationships between the labels assigned to an image and the labels predicted by the model across all test data, and is a helpful diagnostic tool to understand which classes are systematically misclassified.} \mt{The confusion matrix for \fix{our model} is presented in \autoref{fig:confusion_matrix}}. The values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; however, since a single image may truly contain multiple shapes, the values have been adjusted to remove the effect of any true positives from the calculation of false positive proportions.
 %\svp{As a result of this adjustment, the probabilities off-diagonal are the proportion ... need to explain the conditional probability we're showing here}
 \fix{As a result of this adjustment, the off-diagonal values are the proportion of images within a true class that are falsely labeled as containing another class that has not been identified in the image. }%\svp{I can't remember exactly how we're doing that, but we may want to look more closely at that - if we set everything to NA instead of 0, the rate calculations would be higher than expected}
-For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any image that truly contains both triangles and quadrilaterals is removed before calculating the proportion of false quadrilateral labels.
+For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any image that truly contains both triangles and quadrilaterals is removed before calculating the proportion of false quadrilateral labels. \mt{Note that this matrix is not symmetric---the proportion of images containing text that are falsely predicted to contain circles is not necessarily equal to the proportion of images containing circles that are falsely predicted to contain text.}
 
 <<confusion_matrix, fig.width = 9, fig.height = 8, out.width = "\\textwidth", fig.cap = "Confusion matrix, showing on the diagonal the correct classification rate and on the off-diagonal, classification errors. Note that in multi-label images, correct off-diagonal labels have been excluded from the calculation of false positives.", fig.scap = "Confusion matrix, with correct and incorrect model classifications.", dpi = 600>>=
 get_confusion_matrix(predictions = preds, classes = classes,
@@ -458,17 +470,19 @@ get_confusion_matrix(predictions = preds, classes = classes,
         panel.spacing = unit(c(0, 0, 0, 0), "mm"))
 @
 
-The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles produce a large number of false positive predictions into other categories, as evidenced by the vertical bands. Another interesting artifact in \autoref{fig:confusion_matrix} is that circles are often misclassified as text, and text is often mislabeled as containing circles. Not all of the images used in model training are accurately labeled: in some cases, the labels have not \mt{yet} been updated after labeling guidelines have changed. The confusion between text and circles is a natural consequence of the overlap between geometric shapes and components of written text; it is not indicative of a lack of fit as much as a weakness in the classification system used to define the model.
+The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles produce a large number of false positive predictions into other categories, as evidenced by the vertical bands. Another interesting artifact in \autoref{fig:confusion_matrix} is that circles are often misclassified as text, and text is often mislabeled as containing circles.
 
-%\svp{I would move heatmaps up and out of the diagnostic section and transition into that, possibly}
+\fix{(Transition) We have identified three possible causes for systematic misclassification: incorrect labels, low contrast, and variability within classes/overlap between classes.}
 
-%\svp{Three main model exploration chunks: consistency, heatmaps, brand (motivated by the fact that some classes perform so badly because the exemplars are so variable) - need to figure out the best sequence to transition}
+%One reason for these misclassifications is that not all of the images used in model training are accurately labeled: in some cases, the labels have not \mt{yet} been updated after labeling guidelines have changed. The confusion between text and circles is a natural consequence of the overlap between geometric shapes and components of written text; it is not indicative of a lack of fit as much as a weakness in the classification system used to define the model.
 
 \paragraph{Contrast}
 
+\fix{Low contrast images are difficult to predict because the features are not prominent. The model has 'learned' that predicting diffuse probabilities across the classes minimizes loss, so it tends to assign diffuse probabilities to low contrast images. Contrast correction seems to improve predictions, but the diffuse probability strategy persists, so we will incorporate contrast correction into model training.}
+
 <<low-contrast-consistency, fig.cap = "Images with low contrast, before and after correction", fig.pos = "p!", out.width = "100%", cache = T>>=
 lowcontrast <- list.files(file.path(wd, "images", "consistency", "low-contrast"), full.names = T)
-pred_prob_plot(lowcontrast, loaded_model, sort = F)
+pred_prob_plot(lowcontrast, loaded_model, sort = F, eer = eers)
 @
 
 \paragraph{Brand Investigations}
@@ -476,7 +490,6 @@ pred_prob_plot(lowcontrast, loaded_model, sort = F)
 One possible explanation for the poor performance of some categories is the amount of variability within the shapes. \fix{For example, as seen in \autoref{fig:brands-within-shapes}, a large proportion of bowties come from Birks; thus, the model learns bowties from Birks well, which leads to more accurate predictions of new bowtie images that come from Birks. There is no similar dominance in categories like quads. Instead, quads are highly variable  and come from a wide range of brands, so it is harder for the model to learn which set of features designate a quadrilateral. Since a large number of features are then associated with quads, the model gets more easily confused. When it sees some of those same features in other classes, it tries to guess quad. This is further explored in the next section.}
 
 \mt{That was a really quick and dirty version of what I'm trying to say... Am I missing any big points, before I try to expand it and clean up the technical part of the writing?}
-
 
 <<brand-plots, device = "cairo", include = F>>=
 img_names <- dfunion$filename %>% basename() %>% as.vector
@@ -580,13 +593,13 @@ Belonging to a category of techniques called class activation map (CAM) visualiz
 
 %\fix{I picked the heatmaps I thought illustrated the point best, but didn't modify them heavily yet. How many do we want to include, and do we want to highlight model challenges or just focus on the point that CoNNOR sees what we see?} \svp{I think it's worth highlighting the fact that we'll never get a model that's perfect because that curly s is pretty much a circle, and there will always be weird shapes that partially activate different categories.}
 
-\fix{Susan, please generate these heatmaps and move them to the "static" folder. My computer still has issues with the transparent layer of the heatmap, so it's probably easiest to do what we did for my CC and have you generate the images so they turn out correctly. Once I can see them all, I'll decide which three heatmaps best illustrate the point that shape categories have similar features that (understandably) confuse the model and I'll write about those specific heatmaps.}
+\fix{Susan, please generate these heatmaps and move them to the "static" folder. My computer still has issues with the transparent layer of the heatmap, so it's probably easiest to do what we did for my CC and have you generate the images so they turn out correctly. Once I can see them all, I'll decide which three (or so) heatmaps best illustrate the point that shape categories have similar features that (understandably) confuse the model and I'll write about those specific heatmaps.}
 
 <<setup-heatmap>>=
 imgs <- list.files(file.path(wd, "images", "heatmaps", "raw"), full.names = T)
 @
 
-<<generate-heatmaps, echo = F>>=
+<<generate-heatmaps, echo = F, eval = F>>=
 # My computer has troubles with the transparency of the overlay...
 # This code is functional, but highest quality will come from generating these
 # images on Bigfoot and loading them statically.
