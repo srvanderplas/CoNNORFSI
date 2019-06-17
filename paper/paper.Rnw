@@ -229,7 +229,7 @@ The categories we use in this study are operationally defined as follows:
 \caption[Geometric elements used to classify tread patterns.]{A set of geometric elements used to classify tread patterns. Categories modified from \cite{grossVariabilitySignificanceClass2013}.}\label{tab:class-char-examples}
 \end{table}
 
-Thousands of outsole images were scraped from online shoe retail sites and annotated using LabelMe, a tool for image annotation in computer vision problems \citep{labelme}. After annotation, images are processed by an R script that identifies the minimum bounding rectangle of the region, crops the image to that region, and scales the cropped area to a 256 x 256 pixel image suitable for analysis by the convolutional neural network. During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
+Thousands of outsole images were scraped from online shoe retail sites and annotated using LabelMe, a tool for image annotation in computer vision problems \citep{labelme}. After annotation, the minimum bounding rectangle of the region \svp{is identified} and the image is cropped to that area; subsequently, the cropped image is scaled to 256 x 256 pixels.} During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
 
 \begin{figure}[hbt]
 \centering
@@ -276,12 +276,14 @@ Transfer learning substantially reduces the amount of data required to train a C
 Model training is analogous to the human learning process. For example, a child learns to identify dogs by being presented with many labeled examples, such as when their parent uses the label ``dog" for an animal walking by. That child's understanding of dogs is then measured by how many dogs the child is able to correctly identify, and also by the number of other animals it mistakenly calls ``dog". Similarly, CNN training is a series of stages, or ``epochs", where the model learns from the set of labeled training data, and that learning is measured through intermediate predictions on validation data.
 
 The \Sexpr{nrow(dfunion)} images were split such that 60\% were used for training. Since the categories do not exist in equal proportion in the labeled data,
-the training data were weighted by proportion during the training process to ensure that the model can identify both rare and common geometric shapes. Of the remaining 40\% of data, half were used for validation, to monitor the training process, and the remaining data were for testing the performance of the fitted model.
+the training data were weighted by proportion during the training process to ensure that the model can identify both rare and common geometric shapes. Of the remaining 40\% of data, half were used for validation, to monitor the training process, and the remaining data were for testing the performance of the final model.
 
 \svp{This section header might need to move? Haven't decided yet...}
 \section{Results}
 
 \subsection{Model Training}
+\svp{During model fitting, the model ``learns" from the training set and is evaluated on the validation set, which consists of previously unseen images (e.g. images not used during the training process). Learning occurs by minimization of the ``Loss", which is a function of the distance between the model predictions and the image labels. As the loss decreases, the model's accuracy (the proportion of correct labels) increases.  During model training, we expect that the accuracy for the training set will increase beyond the accuracy for the validation set; the validation accuracy will eventually level off. Similarly, we expect the loss for the training set and the validation set to decrease initially.} \autoref{fig:training-accuracy} shows the training and validation accuracy and loss at each epoch of the fitting process.
+% In machine learning, a loss function is a function that measures how far model predictions are from the given labels for each image in the validation and test sets; the model ``learns" by updating its predictions to minimize the loss. \autoref{fig:training-accuracy} shows the training and validation accuracy and loss at each epoch of the fitting process.
 <<training-accuracy, fig.width = 7.5, fig.height = 5, out.width = ".75\\textwidth", fig.cap = "Training and validation accuracy and loss for each epoch of the fitting process. Training and validation accuracy reach 89.5\\% around epoch 9. After that point, validation loss remains the same and training loss decreases slightly, while validation accuracy increases more slowly than training accuracy.", fig.scap = "Training and validation accuracy and loss during each epoch.", fig.pos = 'h'>>=
 data.frame(history$metrics) %>%
   mutate(epoch = 1:n()) %>%
@@ -303,7 +305,6 @@ data.frame(history$metrics) %>%
         legend.background = element_rect(fill = "white"))
 @
 
-In machine learning, a loss function is a function that measures how far model predictions are from the given labels for each image in the validation and test sets; the model ``learns" by updating its predictions to minimize the loss. \autoref{fig:training-accuracy} shows the training and validation accuracy and loss at each epoch of the fitting process.
 
 Overfitting is when a model learns the training data so well that its understanding of the categories becomes specific to the training cases, which, in turn, leads to poor prediction of new images that were not in the training set. During the training process, overfitting is indicated when the validation loss begins to increase after reaching a global minimum. Alternately, underfitting occurs if the validation accuracy is still increasing when model optimization is terminated (for instance, between epochs 1 and 10 in \autoref{fig:training-accuracy}), because model performance is still improving with continued training. In \autoref{fig:training-accuracy}, validation accuracy levels off after epoch 20, and validation loss has not yet begun to increase at epoch 30, indicating that the model optimization process was halted at an appropriate epoch.
 
