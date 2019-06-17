@@ -233,7 +233,7 @@ The categories we use in this study are operationally defined as follows:
 \caption[Geometric elements used to classify tread patterns.]{A set of geometric elements used to classify tread patterns. Categories modified from \cite{grossVariabilitySignificanceClass2013}.}\label{tab:class-char-examples}
 \end{table}
 
-Thousands of outsole images were scraped from online shoe retail sites and annotated using LabelMe, a tool for image annotation in computer vision problems \citep{labelme}. After annotation, the minimum bounding rectangle of the region \svp{is identified} and the image is cropped to that area; subsequently, the cropped image is scaled to 256 x 256 pixels.} During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
+Thousands of outsole images were scraped from online shoe retail sites and annotated using LabelMe, a tool for image annotation in computer vision problems \citep{labelme}. After annotation, the minimum bounding rectangle of the region \svp{is identified and the image is cropped to that area; subsequently, the cropped image is scaled to 256 x 256 pixels.} During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
 
 \begin{figure}[hbt]
 \centering
