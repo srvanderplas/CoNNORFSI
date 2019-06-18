@@ -74,11 +74,15 @@ source(file.path(codedir, "Generate_Model_Images.R"))
 <<labeled-data-setup, include = F>>=
 model_path <- file.path(modeldir, "TrainedModels")
 
-# newest_model <- get_newest(dir = model_path, pattern = "weights.h5")
-newest_model <- list(path = file.path(model_path, "20190514-155453"),
-    base_file = "2019-05-14_19:45:22_vgg16_onehotaug_9class_256-weights.h5",
-    prefix = "vgg16_onehotaug_9class_256", start_date = "2019-05-14_19:45:22",
-    process_dir = "20190514-155453")
+if(grepl("!School", model_path)) {
+  newest_model <- get_newest(dir = model_path, pattern = "weights.h5")
+} else {
+  newest_model <- list(path = file.path(model_path, "20190514-155453"),
+      base_file = "2019-05-14_19:45:22_vgg16_onehotaug_9class_256-weights.h5",
+      prefix = "vgg16_onehotaug_9class_256", start_date = "2019-05-14_19:45:22",
+      process_dir = "20190514-155453")
+}
+
 newest_data_file <- file.path(modeldir, "RProcessedImages",
                               newest_model$process_dir, "cropped_photos.Rdata")
 
@@ -94,7 +98,6 @@ load(file.path(get_newest()$path, get_newest(pattern = "\\d.Rdata")$base_file))
 model_wts_file <- file.path(newest_model$path, newest_model$base_file)
 loaded_model <- set_weights(model_wts_file)
 @
-
 
 \begin{document}
 
@@ -147,10 +150,10 @@ Ultimately, most pattern evidence is stored in photographic form; as a result, w
 Convolutional neural networks (CNNs) are widely recognized as superior for novel image classification. CNNs are a form of artificial neural network which make use of the image convolution operator used by many low-level feature extraction methods, with the additional ability to aggregate such features and meaningfully connect them to a pre-determined set of labels. CNNs have deep architectures that can be trained to identify complex patterns, but they are structurally similar to the architecture of the human visual system and output binary or probabilistic predictions for given labels that are readily interpretable. As CNNs make use of labeled training data, the predictions generated are for features which are similar to those identified by humans, resulting in models with greater face validity. Once a CNN is trained, it is relatively fast and easy to apply the model to new images and obtain classifications.
 
 \paragraph{Transfer Learning}
-%\mt{Training a CNN from scratch is hard. There are CNNs trained on complex images, and transfer learning lets us use those weights. In particular, we're using VGG16. We can look at the filters of VGG16 to support our claim that it will be good for the task.}
+%\mt{Goal: Training a CNN from scratch is hard. There are CNNs trained on complex images to detect a wide range of features, and transfer learning lets us use those feature detectors. In particular, we're using VGG16. We can look at the filters of VGG16 to support our claim that it will be good for the task.}
 Neural networks are composed of sets of layers; the early layers, which are called the model base, contain feature detectors, and the final layers make up the classifier, or model head, which connects meaningful features to classification labels. A relatively simple convolutional neural network which processes image data may contain more than 14 million parameters in the model base and an additional 120 million parameters in the model head; to train a model of this nature requires millions of labeled images and a significant amount of computational power. Assembling data to train a network from scratch is often a nearly impossible task; the process of \emph{transfer learning} is a natural solution to this common problem. Transfer learning leverages the modularity of neural networks, that is, that the model base can be separated from the classifier which produces predictions.
 
-Many convolutional neural networks have been trained on a subset of images \svp{from ImageNet}; these images are hierarchically labeled, so the same image of a dog may have labels of sky, grass, and trees, and the dog may be labeled as ``mammal'', ``dog'', ``retriever'', and ``golden retriever'' at increasing levels of label complexity \citep{dengImageNetLargeScaleHierarchical}. CNNs trained on ImageNet are optimized for general human-like vision, that is, the ability to recognize a large set of different features simultaneously. As a result, the base of networks trained on these sets are often used for transfer learning, because the initial layers are broadly generalizable to a wide variety of more specific image labeling tasks. \fix{More to be said later.}
+Many convolutional neural networks have been trained on a subset of images from \mt{an online image database called ImageNet \citep{dengImageNetLargeScaleHierarchical}. In particular, there is a standard set of images from ImageNet, consisting of 1.2 million images and spanning 1,000 catetories, that is commonly used in computer vision tasks; these images provide both a wide variety of images for training complex image-classification models and a standardized way to compare performance across different models. Images from ImageNet} are hierarchically labeled, so \mt{an} image of a dog may have labels of sky, grass, and trees, and the dog may be labeled as ``mammal'', ``dog'', ``retriever'', and ``golden retriever'' at increasing levels of label complexity. CNNs trained on ImageNet are optimized for general human-like vision, that is, the ability to recognize a large set of different features simultaneously. As a result, the base of networks trained on these sets are often used for transfer learning, because the initial layers are broadly generalizable to a wide variety of more specific image labeling tasks. \mt{Later in this paper, we will examine a selection of filters from a CNN trained on ImageNet that demonstrates the generalizability of pre-trained models.}
 
 Each layer in the model structure is comprised of sets of weights and connections that have been optimized during training. Transfer learning in neural network contexts involves freezing the weights of the pre-trained model base taken from a network trained on a more general set of images, so that during the training process, only the weights of the newly-added classifier are updated \citep{oquabLearningTransferringMidlevel2014}. In many cases, the entire model base is used, and fitted with a new model head; the modularity of CNNs makes this process relatively simple, and allows researchers to leverage pre-trained networks when working with diffierent sets of image data. Transfer learning allows CNNs to be applied to smaller datasets of several thousand images, reduces the amount of computational time required to fit the model, and provides boosted performance compared to training a new model from scratch \citep{yosinskiHowTransferableAre2014}. It has been successfully applied in automatic classification of medical images \citep{shinDeepConvolutionalNeural2016} as well as in various applications of shoe forensics \citep{kongCrossDomainForensicShoeprint2017,kongCrossDomainImageMatching2019a,zhangAdaptingConvolutionalNeural2017}.
 
@@ -161,37 +164,44 @@ Each layer in the model structure is comprised of sets of weights and connection
 \end{figure}
 
 \paragraph{VGG16}
-Developed by Oxford's Visual Graphics Group, VGG16 is a pre-trained CNN with 16 ``functional" (i.e., convolutional and densely connected) layers and 5 ``structural" max pooling layers \citep{krizhevskyImageNetClassificationDeep2012}. In contrast to other popular networks, like ResNet, VGG has a relatively simple structure that provides easier training and interpretability with very little sacrificed accuracy. The simplicity of this structure provides the ability to peer into the inner workings of the network for diagnostic purposes, providing a distinct advantage over more complicated network structures with slightly higher accuracy ratings. VGG16 is a common choice for transfer learning because of this structural simplicity; it has been used for detection of text in natural images \citep{zhongDeepTextUnifiedFramework2016}, medical imaging classification \citep{oquabLearningTransferringMidlevel2014}, classification of weld defects \citep{liuWeldDefectImages2018}, and many other domain-specific image recognition tasks that are more specific than the ImageNet data on which it was trained. \autoref{fig:VGG16-structure} shows the architecture of VGG16; with transfer learning, the VGG16 model head is replaced with a trained model head specific to recognition of shoeprint class characteristics.
+Developed by Oxford's Visual Graphics Group, VGG16 is a \mt{CNN that has been trained on ImageNet. VGG16 has} 16 ``functional" (i.e., convolutional and densely connected) layers and 5 ``structural" max pooling layers. \citep{krizhevskyImageNetClassificationDeep2012}. In contrast to other popular networks, like ResNet, VGG has a relatively simple structure that provides easier training and interpretability with very little sacrificed accuracy. The simplicity of this structure provides the ability to peer into the inner workings of the network for diagnostic purposes, providing a distinct advantage over more complicated network structures with slightly higher accuracy ratings. VGG16 is a common choice for transfer learning because of this structural simplicity; it has been used for detection of text in natural images \citep{zhongDeepTextUnifiedFramework2016}, medical imaging classification \citep{oquabLearningTransferringMidlevel2014}, classification of weld defects \citep{liuWeldDefectImages2018}, and many other domain-specific image recognition tasks that are more specific than the ImageNet data on which it was trained. \autoref{fig:VGG16-structure} shows the architecture of VGG16; with transfer learning, the VGG16 model head is replaced with a trained model head specific to recognition of shoeprint class characteristics.
 
-\svp{The base of VGG16 is made up of five blocks, which consist of two or three convolutional layers and one max pooling layer which aggregates the signal from the convolutional layers. Each convolutional layer} is made up of hundreds of filters, such that each of the five convolutional blocks has between 128 and 1,536 filters. A filter is a set of numerical weights that, when applied to an image, quantifies the presence of the specific shapes and/or colors that the filter is trained to detect. \autoref{fig:vgg16layers} shows a selection of filters from VGG16, with each row corresponding to one of the five convolutional blocks. Filters in earlier convolutional blocks detect simple features, such as colors, \svp{lines, corners,} and blobs, while later filters detect more complex combinations of features. \svp{This aggregation of features through successive convolutional layers mirrors the process of complex feature detection in human vision.} \svp{Any complex feature can be disassembled into a set of simple features; similarly, the successive sets of layers detect increasingly detailed features.} %When considered together, the series of filters perform the process of feature detection, such that a single image is made up of some combination of the thousands of features that are detected by filters.
-Although the filters of VGG16 have been trained and optimized on the ImageNet Data, the large number of filters span a wide variety of shapes and features, \svp{many of which are useful when examining tread patterns. Just as humans can detect the features of an unfamiliar object (consituent parts, edges, textures, and corners), a CNN trained on a wide set of objects can be used to classify unrelated images, such as shoe soles.} %\fix{which are still useful/relevant to classifying outsoles. In a sense, this is much like teaching humans to classify objects they have never seen before: an object may be unfamiliar, but our eyes can still detect its color, shape, and texture because we have learned these ideas from other sources.} \fix{Say somewhere: Max pooling layers aggregate the features in one block before passing them to the next block, which helps reduce the computational load of training the model and helps to generalize the relationship between features.} % I've tried to do this concisely - if you don't like it, please feel free to revert the changes.
+The base of VGG16 is made up of five blocks, which consist of two or three convolutional layers and one max pooling layer which aggregates the signal from the convolutional layers. Each convolutional layer is made up of hundreds of filters, such that each of the five convolutional blocks has between 128 and 1,536 filters. A filter is a set of numerical weights that, when applied to an image, quantifies the presence of the specific shapes and/or colors that the filter is trained to detect. \autoref{fig:vgg16layers} shows a selection of filters from VGG16, with each row corresponding to one of the five convolutional blocks. Filters in earlier convolutional blocks detect simple features, such as colors, lines, corners, and blobs, while later filters detect more complex combinations of features. This aggregation of features through successive convolutional layers mirrors the process of complex feature detection in human vision. Any complex feature can be disassembled into a set of simple features; similarly, the successive sets of layers detect increasingly detailed features.
+
+Although the filters of VGG16 have been trained and optimized on the ImageNet data, the large number of filters span a wide variety of shapes and features, many of which are useful when examining tread patterns. Just as humans can detect the features of an unfamiliar object (consituent parts, edges, textures, and corners), a CNN trained on a wide set of objects can be used to classify unrelated images, such as shoe soles.
 
 <<vgg16layers, fig.width = 7, fig.height = 5.75, fig.cap = "A selection of filters from the convolutional layers of VGG16.">>=
-imgs <- list.files(file.path(wd, "images", "vgg16layers"),
-                   recursive = T, full.names = T)
-pngs <- lapply(imgs, function(x) png::readPNG(x)[46:1596, 32:1582, ])
-grobs <- lapply(pngs, grid::rasterGrob)
-filters <- gridExtra::arrangeGrob(grobs = grobs, nrow = 5)
-ggsave(filename = file.path(wd, "images", "unlabeled_filters.png"),
-       plot = filters, device = "png", width = 6, height = 5.3)
 
-library(magick)
-b <- image_blank(width = 300, height = 1590)
-f <- image_read(file.path(wd, "images", "unlabeled_filters.png"))
-f_l <- image_append(c(b, f)) %>%
-  image_annotate("Block 1:", location = "+60+139",
-                 color = "black", size = 60) %>%
-  image_annotate("Block 2:", location = "+60+457",
-                 color = "black", size = 60) %>%
-  image_annotate("Block 3:", location = "+60+775",
-                 color = "black", size = 60) %>%
-  image_annotate("Block 4:", location = "+60+1093",
-                 color = "black", size = 60) %>%
-  image_annotate("Block 5:", location = "+60+1411",
-                 color = "black", size = 60) %>%
-  image_scale(geometry = "600x")
-image_write(image = f_l, path = file.path(wd, "images", "labeled_filters.png"),
-            format = "png")
+if(!file.exists(file.path(wd, "images", "unlabeled_filters.png"))) {
+  imgs <- list.files(file.path(wd, "images", "vgg16layers"),
+                     recursive = T, full.names = T)
+  pngs <- lapply(imgs, function(x) png::readPNG(x)[46:1596, 32:1582, ])
+  grobs <- lapply(pngs, grid::rasterGrob)
+  filters <- gridExtra::arrangeGrob(grobs = grobs, nrow = 5)
+  ggsave(filename = file.path(wd, "images", "unlabeled_filters.png"),
+         plot = filters, device = "png", width = 6, height = 5.3)
+}
+
+if(!file.exists(file.path(wd, "images", "labeled_filters.png"))) {
+  library(magick)
+  b <- image_blank(width = 300, height = 1590)
+  f <- image_read(file.path(wd, "images", "unlabeled_filters.png"))
+  f_l <- image_append(c(b, f)) %>%
+    image_annotate("Block 1:", location = "+60+139",
+                   color = "black", size = 60) %>%
+    image_annotate("Block 2:", location = "+60+457",
+                   color = "black", size = 60) %>%
+    image_annotate("Block 3:", location = "+60+775",
+                   color = "black", size = 60) %>%
+    image_annotate("Block 4:", location = "+60+1093",
+                   color = "black", size = 60) %>%
+    image_annotate("Block 5:", location = "+60+1411",
+                   color = "black", size = 60) %>%
+    image_scale(geometry = "600x")
+  image_write(image = f_l, path = file.path(wd, "images", "labeled_filters.png"),
+              format = "png")
+}
+
 knitr::include_graphics(file.path(wd, "images", "labeled_filters.png"))
 @
 
@@ -219,26 +229,26 @@ The categories we use in this study are operationally defined as follows:
 \centering
 \setlength\tabcolsep{1mm}
 \begin{tabular}{rccl}
-     Bowtie & \raisebox{-.5\height}{\includegraphics[width=.3\textwidth]{images/class_examples/bowtie_examples.png}} &
-     \raisebox{-.5\height}{\includegraphics[width=.3\textwidth]{images/class_examples/chevron_examples.png}} & Chevron \vspace{1mm}\\
-     Circle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/circle_examples.png}} &
-     \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/line_examples.png}} & Line  \vspace{1mm}\\
-     Polygon & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/polygon_examples.png}} &
-     \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/quad_examples.png}} & Quad  \vspace{1mm}\\
-     Star & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/star_examples.png}} &
-     \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/text_examples.png}} & Text  \vspace{1mm}\\
-     Triangle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/triangle_examples.png}} &
-      \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/other_examples.png}} & Other \\
+Bowtie & \raisebox{-.5\height}{\includegraphics[width=.3\textwidth]{images/class_examples/bowtie_examples.png}} &
+\raisebox{-.5\height}{\includegraphics[width=.3\textwidth]{images/class_examples/chevron_examples.png}} & Chevron \vspace{1mm}\\
+Circle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/circle_examples.png}} &
+\raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/line_examples.png}} & Line  \vspace{1mm}\\
+Polygon & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/polygon_examples.png}} &
+\raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/quad_examples.png}} & Quad  \vspace{1mm}\\
+Star & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/star_examples.png}} &
+\raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/text_examples.png}} & Text  \vspace{1mm}\\
+Triangle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/triangle_examples.png}} &
+\raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/class_examples/other_examples.png}} & Other \\
 \end{tabular}
 \caption[Geometric elements used to classify tread patterns.]{A set of geometric elements used to classify tread patterns. Categories modified from \cite{grossVariabilitySignificanceClass2013}.}\label{tab:class-char-examples}
 \end{table}
 
-Thousands of outsole images were scraped from online shoe retail sites and annotated using LabelMe, a tool for image annotation in computer vision problems \citep{labelme}. After annotation, the minimum bounding rectangle of the region \svp{is identified and the image is cropped to that area; subsequently, the cropped image is scaled to 256 x 256 pixels.} During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
+Thousands of outsole images were scraped from online shoe retail sites and annotated using LabelMe, a tool for image annotation in computer vision problems \citep{labelme}. After annotation, the minimum bounding rectangle of the region is identified and the image is cropped to that area; subsequently, the cropped image is scaled to 256 x 256 pixels. During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
 
 \begin{figure}[hbt]
 \centering
-  \includegraphics[width=.9\textwidth]{images/LabelMe2.png}
-  \caption{An example of labeling images with LabelMe}
+\includegraphics[width=.9\textwidth]{images/LabelMe2.png}
+\caption{An example of labeling images with LabelMe}
 \end{figure}
 
 <<class-characteristic-barchart, fig.width = 6, fig.height = 4, dpi = 300, out.width = "80%", fig.cap = "Distribution of classes in all labeled images. Quadrilaterals, lines, circles, text, and chevrons are relatively common; stars, polygons, and bowties are relatively rare.", fig.scap = "Distribution of classes in all labeled images.">>=
@@ -286,8 +296,8 @@ the training data were weighted by proportion during the training process to ens
 \section{Results}
 
 \subsection{Model Training}
-\svp{During model fitting, the model ``learns" from the training set and is evaluated on the validation set, which consists of previously unseen images (e.g. images not used during the training process). Learning occurs by minimization of the ``Loss", which is a function of the distance between the model predictions and the image labels. As the loss decreases, the model's accuracy (the proportion of correct labels) increases.  During model training, we expect that the accuracy for the training set will increase beyond the accuracy for the validation set; the validation accuracy will eventually level off. Similarly, we expect the loss for the training set and the validation set to decrease initially.} \autoref{fig:training-accuracy} shows the training and validation accuracy and loss at each epoch of the fitting process.
-% In machine learning, a loss function is a function that measures how far model predictions are from the given labels for each image in the validation and test sets; the model ``learns" by updating its predictions to minimize the loss. \autoref{fig:training-accuracy} shows the training and validation accuracy and loss at each epoch of the fitting process.
+During model fitting, the model ``learns" from the training set and is evaluated on the validation set, which consists of previously unseen images (i.e. images not used during the training process). Learning occurs by minimization of the ``loss", which is a function of the distance between the model predictions and the image labels. As the loss decreases, the model's accuracy (the proportion of correct labels) increases. During model training, we expect that the accuracy for the training set will increase beyond the accuracy for the validation set; the validation accuracy will eventually level off. Similarly, we expect the loss for the training set and the validation set to decrease initially. \autoref{fig:training-accuracy} shows the training and validation accuracy and loss at each epoch of the fitting process.
+
 <<training-accuracy, fig.width = 7.5, fig.height = 5, out.width = ".75\\textwidth", fig.cap = "Training and validation accuracy and loss for each epoch of the fitting process. Training and validation accuracy reach 89.5\\% around epoch 9. After that point, validation loss remains the same and training loss decreases slightly, while validation accuracy increases more slowly than training accuracy.", fig.scap = "Training and validation accuracy and loss during each epoch.", fig.pos = 'h'>>=
 data.frame(history$metrics) %>%
   mutate(epoch = 1:n()) %>%
@@ -309,7 +319,6 @@ data.frame(history$metrics) %>%
         legend.background = element_rect(fill = "white"))
 @
 
-
 Overfitting is when a model learns the training data so well that its understanding of the categories becomes specific to the training cases, which, in turn, leads to poor prediction of new images that were not in the training set. During the training process, overfitting is indicated when the validation loss begins to increase after reaching a global minimum. Alternately, underfitting occurs if the validation accuracy is still increasing when model optimization is terminated (for instance, between epochs 1 and 10 in \autoref{fig:training-accuracy}), because model performance is still improving with continued training. In \autoref{fig:training-accuracy}, validation accuracy levels off after epoch 20, and validation loss has not yet begun to increase at epoch 30, indicating that the model optimization process was halted at an appropriate epoch.
 
 \subsection{Model Accuracy}
@@ -317,43 +326,41 @@ Overfitting is when a model learns the training data so well that its understand
 \mt{\textbf{OUTLINE OF RESULTS}
 \begin{itemize}
 \item ROC
-  \begin{itemize}
-  \item Overall: model performance is better than chance
-  \item Classes: broad comparison of class performance
-  \end{itemize}
+\begin{itemize}
+\item Overall: model performance is better than chance
+\item Classes: broad comparison of class performance
+\end{itemize}
 \item Examples
-  \begin{itemize}
-  \item Show what predictions look like
-  \item Introduce the idea that some classifications aren't perfect
-  \item Motivate systematic class-by-class confusion
-  \end{itemize}
+\begin{itemize}
+\item Show what predictions look like
+\item Introduce the idea that some classifications aren't perfect
+\item Motivate systematic class-by-class confusion
+\end{itemize}
 \item Confusion Matrix
-  \begin{itemize}
-  \item Show patterns in misclassification
-  \item Motivates further understanding of common mistakes
-  \end{itemize}
+\begin{itemize}
+\item Show patterns in misclassification
+\item Motivates further understanding of common mistakes
+\end{itemize}
 \item Three main reasons for error: image contrast, some classes are more variable, and some classes share physical features (I.e., the model has to learn a lot of features to encapsulate a class with lots of variety, but then other classes share those features)
 \item Contrast
 \item Brands
-  \begin{itemize}
-  \item Bowties/polygons/stars are mostly found in only a few brands, but the top N quad/line brands only take up a small proportion of all quads/lines (.04 or less)
-  \item In general, the most difficult classes to classify are those that are highly variable
-  \end{itemize}
+\begin{itemize}
+\item Bowties/polygons/stars are mostly found in only a few brands, but the top N quad/line brands only take up a small proportion of all quads/lines (.04 or less)
+\item In general, the most difficult classes to classify are those that are highly variable
+\end{itemize}
 \item Heatmaps
-  \begin{itemize}
-  \item Verify that the model is using appropriate features when predictions are correct
-  \item Show examples for confident misclassifications (like Seychelles), but make the case that the mistakes are understandable
-  \end{itemize}
-  \item (IDK where to put this, but I think it's a really important point that consistency matters more than accuracy. As long as a shape is predicted consistently, that provides information about outsole similarity, even if it's not 100\% correct. But, if phrased wrong, this undermines the claim that our model can replicate the feature detection examiners are doing...)
+\begin{itemize}
+\item Verify that the model is using appropriate features when predictions are correct
+\item Show examples for confident misclassifications (like Seychelles), but make the case that the mistakes are understandable
+\end{itemize}
 \end{itemize}
 }
 
 \paragraph{Overall Accuracy}
 
-For each image in the test set, the ``true" labels are nine human-assigned labels of 0 or 1 corresponding to the presence or absence of each of the nine shape categories in the image. When the CNN predicts which shapes are in the image, however, it assigns a probability between 0 and 1 for each shape category, with a total of nine probabilities per test image. Thus, to determine the accuracy of the model predictions, we must select a threshold for each label to discretize the model predictions. If the threshold is too low, moderate probabilites will \mt{always meet the threshold}, which increases the true positive and false positive predictions in the test data. Conversely, if the threshold is too high, moderate probabilities will \mt{fail to meet the threshold,} which increases the number of true and false negative predictions. An appropriate threshold must be chosen to produce a high true positive rate while also ideally keeping the false positive rate low. \mt{Is it worth introducing the acronyms TPR and FPR?}
+For each image in the test set, the ``true" labels are nine human-assigned labels of 0 or 1 corresponding to the presence or absence of each of the nine shape categories in the image. When the CNN predicts which shapes are in the image, however, it assigns a probability between 0 and 1 for each shape category, with a total of nine probabilities per test image. Thus, to determine the accuracy of the model predictions, we must select a threshold for each label to discretize the model predictions. If the threshold is too low, moderate probabilites will be more likely to exceed the threshold, which increases the true positive and false positive predictions in the test data. Conversely, if the threshold is too high, moderate probabilities will more often fail to meet the threshold, which increases the number of true and false negative predictions. An appropriate threshold must be chosen to produce a high true positive rate while also ideally keeping the false positive rate low.
 
-Receiver Operating Characteristic (ROC) curves are a type diagnostic plot which compare the false positive rate to the true positive rate for a classification method, and the Area Under the Curve (AUC) \svp{is a summary measure which} quantifies the \svp{overall accuracy of the model}. %It doesn't really summarize the shape - you can have very different shapes of curves with the same AUC value.
-Perfect prediction would be indicated by a right angle along the upper left corner of the plot, with a corresponding AUC of 1, and a diagonal line with an AUC of 0.5 would indicate that the classification method performs no better than random chance. \autoref{fig:overall-roc} shows the ROC curve for \fix{the model} across all classes, and \autoref{fig:class-roc} shows the curve for each class. The full model has an AUC of 0.88, and the AUC for individual classes ranges from 0.81 (for lines) to 0.91 (for bowtie and text). \fix{pull these numbers out of the model using Sexpr} While the class performances do vary slightly, each ROC curve is the same general shape and performs significantly better than random chance. The points in \autoref{fig:class-roc} represent the equal error rate (EER), which is the threshold where there is equal probability of a false positive or false negative error. We will use the class-wise EER to set a threshold corresponding to each class, so that any model prediction with probability above the EER for that shape is considered a positive prediction.
+Receiver Operating Characteristic (ROC) curves are a type diagnostic plot which compare the false positive rate to the true positive rate for a classification method, and the Area Under the Curve (AUC) is a summary measure which quantifies the overall accuracy of the model. Perfect prediction would be indicated by a right angle along the upper left corner of the plot, with a corresponding AUC of 1, and a diagonal line with an AUC of 0.5 would indicate that the classification method performs no better than random chance. \autoref{fig:overall-roc} shows the ROC curve for our model across all classes, and \autoref{fig:class-roc} shows the curve for each class.
 
 <<overall-roc, fig.width = 5, fig.height = 5, out.width = ".5\\textwidth", fig.cap = "ROC curve showing overall model performance.", fig.scap = "Overall model performance ROC curve.">>=
 library(pROC)
@@ -384,7 +391,6 @@ ggplot() +
   theme(legend.position = c(1, 0), legend.justification = c(1.01, -0.01),
         legend.title = element_blank(),
         legend.background = element_rect(fill = "white"))
-
 @
 
 <<class-roc, fig.width = 8, fig.height = 6, out.width = "\\textwidth", fig.cap = "Class-by-class ROC curves. AUC is area under the curve, a measure of overall model performance. Equal error rates are marked, indicating the position at which there is equal probability of a false positive or false negative error.", fig.scap = "Class-by-class ROC curves.">>=
@@ -406,15 +412,20 @@ ggplot() +
   theme(legend.position = c(1, 0), legend.justification = c(1, 0))
 @
 
-\paragraph{Model Predictions}
-The ROC curves provide only a general summary of model accuracy; to learn more about how specific images are classified, we can view images from the test set along with their respective nine model predictions. \autoref{fig:single-exemplars} shows model predictions for images that contain only one type of shape, and \autoref{fig:multi-exemplars} shows predictions for images containing multiple shapes. Most predictions for the single-class images are \fix{promising}; there are some confusions between circle/text and polygon/quad, but all of the true shapes are corectly identified by the model. \fix{The multi-label images also perform quite well; again, true labels are almost all present, with a small number of false positive labels. [Expand on specific cases more, once determining how many examples to keep and how much to highlight errors.] A later section will discuss possible causes for these class confusions.}
+The full model has an AUC of \Sexpr{round(whole_model_roc_df$auc,2)}, and the AUC for individual classes ranges from \Sexpr{round(min(aucs$data$auc),2)} (for \Sexpr{sprintf("%s",classes[which.min(aucs$data$auc)])}) to \Sexpr{round(max(aucs$data$auc),2)}  (for \Sexpr{sprintf("%s",classes[which.max(aucs$data$auc)])}).
+While the class performances do vary slightly, each ROC curve is the same general shape and performs significantly better than random chance. The points in \autoref{fig:class-roc} represent the equal error rate (EER), which is the threshold where there is equal probability of a false positive or false negative error. We will use the class-wise \mt{classwise?} EER to set a threshold corresponding to each class, so that any model prediction with probability above the EER for that shape is considered a positive prediction.
+
+\paragraph{Model Predictions---Examples}
+The ROC curves provide only a general summary of model accuracy; to learn more about how specific images are classified, we can view images from the test set along with their respective \mt{model-assigned} nine class predictions. \autoref{fig:exemplars} and \autoref{fig:circle-text-consistency} show model predictions for a selection of images. \mt{Each image shown in the following examples belongs to either the validation or test data, so none of the images were used during model training. In these figures, the values in each row are the predicted probabilities for the nine classes in the corresponding image image, such that each column represents predictions for a given class. The saturation of blue color corresponds to the strength of the predicted probability, and the navy blue border around an image indicates that the predicted probability is above the EER threshold for the given class. Note that the EER is not the same for all classes; in other words, the same probablity value assigned across different categories may yield different conclusions about whether the model predicts the shape is present or absent in the image.}
+
+The first rows of \autoref{fig:exemplars} are images which contain only one of the nine classes. Most of the predictions for these images are \mt{promising; there are some false-positive labels that indicate confusions between circle/text and polygon/quad, but all of the true shapes are corectly identified by the model above EER. The next image belongs to the ``other" category, as it does not contain any of the nine classes; the model correctly assigns near-zero probabilities to each class. The final rows are of images that belong to more than one class category. Again, predictions appear quite good, with most of the prominent shapes correctly identified above EER. \fix{These are mostly new examples from our last meeting because many of the previous images were in the training set... Grrrrr..... I have two or three too many, not sure about color contrast within images, etc., feel free to delete a few or we can discuss them.} [Expand on specific misclassifications more, after determining which examples to delete.] A later section will discuss possible causes for these class confusions.}
 
 <<eers, include = F>>=
 eers <- purrr::map_dbl(aucs$data$eer, function(x){x$thresholds}) %>%
   setNames(classes)
 @
 
-<<single-exemplars, fig.cap = "Examples containing a single shape", fig.pos = "p!", out.width = "100%", cache = T>>=
+<<exemplars, fig.cap = "Examples containing a single shape", fig.pos = "p!", out.width = "100%", cache = F>>=
 single_exemplars <- list.files(file.path(wd, "images", "consistency",
                                          "single-exemplar"), full.names = T)
 multi_exemplars <- list.files(file.path(wd, "images", "consistency",
@@ -423,35 +434,19 @@ pred_prob_plot(rev(c(single_exemplars, multi_exemplars)),
                loaded_model, sort = F, eer = eers)
 @
 
+\mt{While figure \ref{fig:exemplars} shows representative examples of classifications across multiple shape categories, it is also useful to examine many cases within a given shape to get a sense of model consistency.} \mt{\autoref{fig:circle-text-consistency} shows a number of images containing circles and/or text. The top four rows show text contained within a separate, distinct circle shape, and the next five rows show circles represented as the letter ``o" in text. The remaining images contain only one of either text or circles, as well as other possible shape categories. In particular, the first two of these images contain text that use the capital letter ``G", the next two images contain no circular shapes, and the final \fix{N} images contain pure circles that do not appear to belong to text. The model is able to identify the circle in all cases where a circle is truly present, regardless of whether the circle is part of the text or it is distinct; however, the circle prediction is also strong in three of the four images that do not contain a circle, which indicates that the model is having dificulty distinguishing the two categories. This confusion is likely due to the frequency of images which contain both circles and text: text is present in \Sexpr{100 * round(sum(as.logical(grepl("circle", dfunion$name) & grepl("text", dfunion$name))) / sum(grepl("circle", dfunion$name)), 2)}\% of our labeled images containing circles, and circles are present in \Sexpr{100 * round(sum(as.logical(grepl("circle", dfunion$name) & grepl("text", dfunion$name))) / sum(grepl("text", dfunion$name)), 2)}\% of our images containing text.} In addition, the distinction between a circle and an ``o" comes from the context around the shape, which is much more difficult for the model to parse than simply detecting a shape. More importantly, this behavior does not suggest poor model performance as much as a weakness of the classification scheme, which will be discussed in a later section.
 
-\fix{Figures \ref{fig:single-exemplars} and \ref{fig:multi-exemplars} provide representative examples of classifications across multiple categories; it is also useful to examine many cases within a given shape.} \autoref{fig:chevrons-consistency} shows a number of images containing chevrons. The top four rows show regularly repeating chevron patterns and seems to indicate that the model optimally identifies chevrons of a certain width; wide chevrons cross into the realm of bowties, whereas narrow chevrons become indistinguishable from lines. The next six rows show individual and closed chevrons. There is a significant amount of confusion between these wider chevrons and quadrilaterals. Finally, the bottom four rows show less-than-standard chevrons. The rounded chevron has a much lower prediction than those with sharper angles, but still exceeds the EER for chevron; the white chevrons are confounded with overlaid circles, which introduces a complexity that the model attributes to text.
-
-<<chevrons-consistency, fig.cap = "Chevrons", fig.pos = "p!", out.width = "100%", cache = T>>=
-chevron <- list.files(file.path(wd, "images", "consistency", "chevron"), full.names = T)
-pred_prob_plot(rev(chevron), loaded_model, sort = F, eer = eers)
-@
-
-\fix{Describe \autoref{fig:circle-text-consistency}...... The final two don't contain a true circle. IDK why the TOMS logo totally misses circle.}
-
-\mt{If We end up making the claim that consistency matters more than accuracy, we can use \autoref{fig:ugg-consistency} to show that consistently predicting line isn't strictly right but does establish similarity between the images. If we don't emphasize the consistency point as much, the ugg plot is overkill.}
-
-<<circle-text-consistency, fig.cap = "Text with circles or circle-like shapes", fig.pos = "p!", out.width = "100%", cache = T>>=
+<<circle-text-consistency, fig.cap = "Text with circles or circle-like shapes", fig.pos = "p!", out.width = "100%", cache = F>>=
 circle_text <- list.files(file.path(wd, "images", "consistency", "circle-text"), full.names = T)
 pred_prob_plot(rev(circle_text), loaded_model, sort = F, eer = eers)
 @
 
-<<ugg-consistency, fig.cap = "Text with circles or circle-like shapes", fig.pos = "p!", out.width = "100%", cache = T>>=
-ugg <- list.files(file.path(wd, "images", "consistency", "ugg-star-logo"), full.names = T)
-pred_prob_plot(rev(ugg), loaded_model, sort = F, eer = eers)
-@
-
 %\svp{Pros and cons of confusion matrix here? Maybe we just don't show the actual proportions on the graph? I'd like to discuss this more in person.}
 
-\mt{\paragraph{Accuracy by class}}
-\fix{Figures \ref{fig:single-exemplars}-\ref{fig:circle-text-consistency} show predictions for a number of individual images. Many of the misclassifications in these examples are not just seen in individual images, but rather exist systematically in a class.} A confusion matrix is a type of visualization that summarizes the relationships between the labels assigned to an image and the labels predicted by the model across all test data, and is a helpful diagnostic tool to understand which classes are systematically misclassified. \mt{The confusion matrix for \fix{our model} is presented in \autoref{fig:confusion_matrix}}. The values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; however, since a single image may truly contain multiple shapes, the values have been adjusted to remove the effect of any true positives from the calculation of false positive proportions.
-%\svp{As a result of this adjustment, the probabilities off-diagonal are the proportion ... need to explain the conditional probability we're showing here}
-\fix{As a result of this adjustment, the off-diagonal values are the proportion of images within a true class that are falsely labeled as containing another class that has not been identified in the image. }%\svp{I can't remember exactly how we're doing that, but we may want to look more closely at that - if we set everything to NA instead of 0, the rate calculations would be higher than expected}
-For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any image that truly contains both triangles and quadrilaterals is removed before calculating the proportion of false quadrilateral labels. \mt{Note that this matrix is not symmetric---the proportion of images containing text that are falsely predicted to contain circles is not necessarily equal to the proportion of images containing circles that are falsely predicted to contain text.}
+\mt{\paragraph{Confusion Matrix}}
+\mt{Figures \ref{fig:exemplars} and \ref{fig:circle-text-consistency} show predictions for a number of individual images. Many of the misclassifications in these examples, however, are not just seen in individual images, but rather exist systematically between certain classes.} A confusion matrix is a type of visualization that summarizes the relationships between the labels assigned to an image and the labels predicted by the model across all test data, and is a helpful diagnostic tool to understand which classes are systematically misclassified. \mt{The confusion matrix for \fix{our model} is presented in \autoref{fig:confusion_matrix}}. %mt{Each value in the matrix represents the probability of assigning the label associated with that value's corresponding row, conditional upon the image truly belonging to the category associated with the value's column. Thus, }
+The values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; however, since a single image may truly contain multiple shapes, the values have been adjusted to remove the effect of any true positives from the calculation of false positive proportions. For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any images that truly contains both triangles and quadrilaterals are removed before calculating the proportion of false quadrilateral labels. \mt{As a result of this adjustment, the off-diagonal values of the confusion matrix are the proportion of images within a true class (column-wise) that are falsely labeled as containing another class that has not been labeled in the image (row-wise).}%\svp{I can't remember exactly how we're doing that, but we may want to look more closely at that - if we set everything to NA instead of 0, the rate calculations would be higher than expected}
+ \mt{Note that this matrix is not symmetric---the proportion of images containing text that are falsely predicted to contain circles is not necessarily equal to the proportion of images containing circles that are falsely predicted to contain text.}
 
 <<confusion_matrix, fig.width = 9, fig.height = 8, out.width = "\\textwidth", fig.cap = "Confusion matrix, showing on the diagonal the correct classification rate and on the off-diagonal, classification errors. Note that in multi-label images, correct off-diagonal labels have been excluded from the calculation of false positives.", fig.scap = "Confusion matrix, with correct and incorrect model classifications.", dpi = 600>>=
 get_confusion_matrix(predictions = preds, classes = classes,
@@ -473,7 +468,7 @@ get_confusion_matrix(predictions = preds, classes = classes,
         panel.spacing = unit(c(0, 0, 0, 0), "mm"))
 @
 
-The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles produce a large number of false positive predictions into other categories, as evidenced by the vertical bands. Another interesting artifact in \autoref{fig:confusion_matrix} is that circles are often misclassified as text, and text is often mislabeled as containing circles.
+The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles produce a large number of false positive predictions into other categories, as evidenced by the\mt{ir} vertical bands. It is also apparent that circles and text are commonly confused, which supports Another interesting artifact in \autoref{fig:confusion_matrix} is that circles are often misclassified as text, and text is often mislabeled as containing circles.
 
 \fix{(Transition) We have identified three possible causes for systematic misclassification: incorrect labels, low contrast, and variability within classes/overlap between classes.}
 
@@ -494,7 +489,7 @@ One possible explanation for the poor performance of some categories is the amou
 
 \mt{That was a really quick and dirty version of what I'm trying to say... Am I missing any big points, before I try to expand it and clean up the technical part of the writing?}
 
-<<brand-plots, device = "cairo", include = F>>=
+<<brand-plots, out.width = "100%", fig.cap = "Proportions of top 10 shoe brands in our labeled dataset within each shape category, sorted by prevalence. Brand text is present when the brand makes up more than five percent of labeled shoes for the shape category. Some shapes, like bowtie and polygon, are relatively dominated by a small number of brands while other shapes, such as text and quad, are comprised of a large number of brands. Typically, model predictions are best for shape categories without much variability, which, in general, coincides with shapes dominated by a small number of brands.">>=
 img_names <- dfunion$filename %>% basename() %>% as.vector
 
 labs <- sapply(classes, grepl, x = str_extract(img_names, "^.*?-\\d?-"))
