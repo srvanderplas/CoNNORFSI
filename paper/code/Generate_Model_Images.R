@@ -137,7 +137,7 @@ pred_prob_plot <- function(img_path, model, classes = default_classes,
 
   img_preds_df_long <- merge(img_preds_df_long, above_eer,
                              by = c("class", "idx"))
-  img_preds_df_long$fill <- img_preds_df_long$value + img_preds_df_long$yes
+  img_preds_df_long$yes <- factor(img_preds_df_long$yes, labels = c("No", "Yes"))
 
   features_xraster <- purrr::map2(img_preds_df$path, img_preds_df$idx,
                                   ~annotation_custom(grid::rasterGrob(readJPEG(.x), interpolate = T),
@@ -147,16 +147,16 @@ pred_prob_plot <- function(img_path, model, classes = default_classes,
                                                      xmax = 0.5))
 
   if(sum(eer) == length(classes)) {
-    cols <- c("0" = "black", "1" = "black")
+    cols <- c("No" = "black", "Yes" = "black")
     w <- h <- 1
   } else {
-    cols <- c("0" = "white", "1" = "navyblue")
+    cols <- c("No" = "white", "Yes" = "navyblue")
     w <- h <- .975
   }
 
   ggplot() +
     geom_tile(aes(y = idx, x = as.numeric(factor(class)),
-                  fill = value, color = factor(yes),
+                  fill = value, color = yes,
                   width = w, height = h),
               data = img_preds_df_long) +
     geom_text(aes(x = as.numeric(factor(class)), y = idx,
@@ -164,14 +164,17 @@ pred_prob_plot <- function(img_path, model, classes = default_classes,
               hjust = 0.5, vjust = 0.5) +
     scale_fill_gradient("Predicted\nProbability", low = "white",
                         high = "cornflowerblue",limits = c(0, 1)) +
-    scale_color_manual(values = cols, guide = "none") +
+    scale_color_manual(values = cols) +
     features_xraster +
     coord_fixed() +
     scale_x_continuous(limits = c(-0.5, 9.5), breaks = 1:9,
                        labels = default_classes, expand = c(0,0)) +
     scale_y_continuous(limits = c(.5, length(img_path) + .5), expand = c(0,0)) +
     theme(axis.text.y = element_blank(), axis.title = element_blank(),
-          axis.ticks.y = element_blank())
+          axis.ticks.y = element_blank()) +
+    guides(color = guide_legend(title = "Above EER", order = 2,
+                                override.aes = list(fill = NA)),
+           fill = guide_colorbar(order = 1))
 }
 
 # --- # Heatmaps # -------------------------------------------------------------
@@ -263,8 +266,10 @@ prune_heatmap <- function(full_heatmap, keep_classes) {
   return(tmp)
 }
 
-create_composite <- function(heatmap_data, save_file = F, outdir = ".", td = tempdir(), fixed_labels = T,
-                             fail_file = file.path("Images", "poop.jpg")) {
+create_composite <- function(heatmap_data, save_file = F, outdir = ".",
+                             td = tempdir(), fixed_labels = T,
+                             fail_file = file.path("Images", "poop.jpg"),
+                             color_by_label = T) {
 
   # Fix image dimensions
   dim(heatmap_data$img) <- dim(heatmap_data$img)[-1]
@@ -278,7 +283,12 @@ create_composite <- function(heatmap_data, save_file = F, outdir = ".", td = tem
   alpha <- floor(seq(0, 255, length = ncol(pal)))
   pal_col <- rgb(t(pal), alpha = alpha, maxColorValue = 255)
   correct_pal <- colorRampPalette(c("white", "cornflowerblue"))
-  incorrect_pal <- colorRampPalette(c("white", "grey40"))
+  if(color_by_label) {
+    incorrect_pal <- colorRampPalette(c("white", "grey40"))
+  } else {
+    incorrect_pal <- correct_pal
+  }
+
 
   n_classes <- length(heatmap_data$classes)
 
@@ -296,9 +306,15 @@ create_composite <- function(heatmap_data, save_file = F, outdir = ".", td = tem
     intensity <- 100*round(heatmap_data$predictions[j], 2) + 1
 
     bg_col <- ifelse(heatmap_data$truth[j],
-                     correct_pal(131)[30 + intensity],
+                     correct_pal(131)[30*(color_by_label) + intensity],
                      incorrect_pal(101)[intensity])
-    label_col <- ifelse((intensity > 60 && !heatmap_data$truth[j]), "white", "black")
+    if(color_by_label) {
+      label_col <- ifelse((intensity > 60 && !heatmap_data$truth[j]),
+                          "white", "black")
+    } else {
+      label_col <- "black"
+    }
+
 
     overlay <- heatmap_overlay(heatmap_data$heatmap[j,,], geometry = geometry, tdd = td,
                                width = 14, height = 14, bg = NA, col = pal_col)
