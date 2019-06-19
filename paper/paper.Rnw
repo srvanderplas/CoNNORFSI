@@ -325,34 +325,19 @@ Overfitting is when a model learns the training data so well that its understand
 
 \mt{\textbf{OUTLINE OF RESULTS}
 \begin{itemize}
-\item ROC
+\item ROC: shows model performance is generally good, gives broad comparison of class performances
+\item Examples: show what predictions look like, the model isn't perfect, and motivate that some confusions are systematic between specific classes
+\item Confusion Matrix: show patterns in misclassification, motivate diagnostics to explain the cause of common mistakes
+\item Two main reasons for error: image contrast, and overlapping features between classes
 \begin{itemize}
-\item Overall: model performance is better than chance
-\item Classes: broad comparison of class performance
-\end{itemize}
-\item Examples
+\item Low contrast: the model can't see features, which affects training and prediction
+\item Overlapping features:
 \begin{itemize}
-\item Show what predictions look like
-\item Introduce the idea that some classifications aren't perfect
-\item Motivate systematic class-by-class confusion
+\item Many classes share individual features (e.g., lines, angles, curves), so the model already has to integrate features and learn context (e.g., circle vs o)
+\item Some classes are also much more variable (see brand plots), which means the model has to widen its definitions of certain shapes, which makes confusion between classes worse
 \end{itemize}
-\item Confusion Matrix
-\begin{itemize}
-\item Show patterns in misclassification
-\item Motivates further understanding of common mistakes
 \end{itemize}
-\item Three main reasons for error: image contrast, some classes are more variable, and some classes share physical features (I.e., the model has to learn a lot of features to encapsulate a class with lots of variety, but then other classes share those features)
-\item Contrast
-\item Brands
-\begin{itemize}
-\item Bowties/polygons/stars are mostly found in only a few brands, but the top N quad/line brands only take up a small proportion of all quads/lines (.04 or less)
-\item In general, the most difficult classes to classify are those that are highly variable
-\end{itemize}
-\item Heatmaps
-\begin{itemize}
-\item Verify that the model is using appropriate features when predictions are correct
-\item Show examples for confident misclassifications (like Seychelles), but make the case that the mistakes are understandable
-\end{itemize}
+\item Heatmaps: 1) verify that the model is using category-appropriate features to make decisions and 2) show examples of understandable mistakes
 \end{itemize}
 }
 
@@ -472,7 +457,7 @@ get_confusion_matrix(predictions = preds, classes = classes,
 The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles produce a large number of false positive predictions into other categories, as evidenced by the vertical bands \mt{for these categories}. It is also apparent that circles and text are commonly confused, which supports our earlier obsesrvartions from \autoref{fig:circle-text-consistency} that these two classes are difficult for the model to distinguish.
 
 \subsection{Model Diagnostics}
-After examining model performance, both in specific cases and systematically across classes, there seem to be two primary reasons for misclassifications: poor image contrast, and \fix{overlapping features between categories.}
+After examining model performance, both in specific cases and systematically across classes, there seem to be \mt{two primary reasons for misclassifications: poor image contrast, and overlapping features between categories.}
 
 \paragraph{Image Contrast}
 \mt{As described earlier, the images used for this research were web-scraped from online retailers before being labeled and cropped. One consequence of using outsole images instead of impressions is the impact of colors in the image. Features from outsoles that are primarily black or white in color are typically not as prominent as features from images with more varied color schemes; as a result, the features detected by the model base} \fix{are not well defined, which is propogated through both model training and prediction of new images.} \mt{In other words, the model 'learns' that, when there are few meaningful features with which to determine which shapes are present, the best strategy for minimizing loss is to predict diffuse probabilities across many classes, as seen in \autoref{fig:low-contrast-consistency}.}
@@ -496,11 +481,11 @@ pred_prob_plot(lowcontrast, loaded_model, sort = F, eer = eers)
 \end{itemize}
 }
 
-\mt{To detect these shapes, the model is doing a huge amount of feature integration beyond just detecting the presence of raw lines, angles, and curves. A correct classification requires the detection and integration of (often) relatively large features (with respect to filters only a few pixels wide, and also that one feature may take up the whole 256x256 pixel image). So the model already has a tough time learning to predict an image holistically.}
+\mt{To detect these shapes, the model is doing a significant amount of feature integration beyond just detecting the presence of raw lines, angles, and curves. A correct classification requires the detection and integration of (often) relatively large features (with respect to filters only a few pixels wide, and also that one feature may take up the whole 256x256 pixel image). So the model already has a tough time learning to predict an image holistically.}
 
 \mt{This issue is exacerbated by the variability of images within a class. A quadrilateral isn't just a square or rectangle with 4 right angles; it can also be a parallelogram, diamond, trapezoid, chevron, or anything else that has four sides. In general, some of our identified shapes are very common on outsoles and appear in our data in many different forms, which further widens the sets of features the model must learn to associate with a single class. Unfortunately, by associating even more possible features for a single category, the number of features that then overlap between categories also incresases.}
 
-\mt{\autoref{fig:class-characteristic-barchart} shows the number of images labeled within each category; the largest categories also tend to have the most variability in its labeled images. This is supported by \autoref{fig:brand-plots}, which breaks down, by proportion, the top ten most frequent brands in the labeled data for each class. The figure shows that, for example,} a relatively large proportion of bowties in our labeled data are contributed by images of Birkenstocks. Since the bowties on Birkenstocks tend to be similar in shape and size, the model is able to create a relatively stable definition of bowties and thus predicts new images of bowties relatively well. There is no similar consistency in categories like quadrilaterals. \autoref{fig:brand-plots} indicates that no one brand makes up more than 3\% of our labeled quadrilateral images. This suggests that the quadrilaterals in our labeled data are more likely to come in a variety of shapes and sizes, so it is more difficult for the model to learn which set\mt{s} of features designate a quadrilateral.
+\mt{\autoref{fig:class-characteristic-barchart} shows the number of images labeled within each category; the largest categories also tend to have the most variability in its labeled images. This is supported by \autoref{fig:brand-plots}, which breaks down, by proportion, the top ten most frequent brands in the labeled data for each class. The figure shows that, for example,} a relatively large proportion of bowties in our labeled data are contributed by images of Birkenstocks. Since the bowties on Birkenstocks tend to be similar in shape and size, the model is able to create a relatively stable definition of bowties and thus predicts new images of bowties well. There is no similar consistency in categories like quadrilaterals. \autoref{fig:brand-plots} indicates that no one brand makes up more than 3\% of our labeled quadrilateral images. This suggests that the quadrilaterals in our labeled data are more likely to come in a variety of shapes and sizes, so it is more difficult for the model to learn which set\mt{s} of features designate a quadrilateral.
 
 <<brand-plots, out.width = "100%", fig.cap = "Proportions of top 10 shoe brands in our labeled dataset within each shape category, sorted by prevalence. Brand text is present when the brand makes up more than five percent of labeled shoes for the shape category. Some shapes, like bowtie and polygon, are relatively dominated by a small number of brands while other shapes, such as text and quad, are comprised of a large number of brands. Typically, model predictions are best for shape categories without much variability, which, in general, coincides with shapes dominated by a small number of brands.">>=
 img_names <- dfunion$filename %>% basename() %>% as.vector
@@ -636,15 +621,21 @@ knitr::include_graphics(heatmaps[grepl("other", heatmaps)])
 
 \section{Conclusions}
 \svp{Rework this to address 3 main conclusions - 1: NNs work for automatic feature ID, 2: Different levels of feature variability within classes, and 3: correcting for contrast is important.}
-\mt{I'll do this once Results is stable, so I can make it match the rest of the story.}
-The goal of this research was to develop a method to automatically identify geometric class characteristics of shoe outsoles. Such a method takes the ``impossible" problem of quantifying outsole features in a given population and lays the groundwork for a tractable solution. A set of geometric class characteristics was defined to both broadly classify a large variety of shoes and to narrow down similarity into a manageable number and type of features for further use in a shoeprint analysis. The final set of features used in this research achieves both goals quite well, and has potential for much finer-grained analysis when recognized features are combined with spatial information and relationships.
+The goal of this research was to develop a method to automatically identify geometric class characteristics of shoe outsoles. Such a method takes the difficult problem of quantifying outsole features in a given population and lays the groundwork for a tractable solution. A set of geometric class characteristics was defined, based on feature sets currently used by examiners, to both broadly classify a large variety of shoes and to narrow down similarity into a manageable number and type of features for further use in a shoeprint analysis. The final set of features used in this research achieves both goals quite well, and has potential for much finer-grained analysis when recognized features are combined with spatial information and relationships.
 
-CoNNOR was developed using the convolutional base of VGG16 and a newly trained classifier/head to identify the defined set of geometric features. After training, CoNNOR performs well on the data provided. In general, the model is able to identify many well-defined geometric shapes in the images both consistently and accurately. The prediction accuracy of this model provides the ability to compute statistics for the frequency of given features in a well-defined population.
+Our model was developed using the convolutional base of VGG16 and a newly trained classifier/head to identify the defined set of geometric features. After training, the model performs well on the data provided. In general, the model is able to identify many well-defined geometric shapes in the images.
 
-\section{Future Work}
+\mt{
+\begin{itemize}
+\item Many model errors are a result of overlapping geometric features between classes. The variability within certain classes exacerbates the difficulty in defining categories, leading to frequent confusion between circle/text and triangle/quad/polygon
+\item Model predictions also indicate that contrast correction is important, and model should be retrained on cc'd images
+\item Mention cutting off conv block?
+\end{itemize}
+}
 
-\svp{Need to show image contrast stuff to use this paragraph.}
-Although CoNNOR performs well in its current state, there are still a number of ways to potentially improve prediction accuracy. For one, image contrast  plays a large role in how well the model classifies the geometric shapes present. Thus, exploring methods of color correction, such as histogram normalization, may prove useful for eliminating the effect of contrast on predictions. Geometric features are also relatively simple with respect to the features that are being detected by the final convolutional block of VGG16, as in \autoref{fig:vgg16layers}; it is quite possible that prediction accuracy could improve by directly classifying the features that are output by the fourth block, rather than using the full convolutional base.
+%\section{Future Work}
+%\svp{Need to show image contrast stuff to use this paragraph.}
+%Although CoNNOR performs well in its current state, there are still a number of ways to potentially improve prediction accuracy. For one, image contrast  plays a large role in how well the model classifies the geometric shapes present. Thus, exploring methods of color correction, such as histogram normalization, may prove useful for eliminating the effect of contrast on predictions. Geometric features are also relatively simple with respect to the features that are being detected by the final convolutional block of VGG16, as in \autoref{fig:vgg16layers}; it is quite possible that prediction accuracy could improve by directly classifying the features that are output by the fourth block, rather than using the full convolutional base.
 
 
 \bibliography{mybibfile}
