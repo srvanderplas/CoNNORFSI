@@ -553,7 +553,14 @@ ggplot(data = brand_prop_by_feature_10) +
 
 \mt{Note to self: I feel like I want the heatmaps concentrated in one spot, and it would feel like a strange interjection to explain them earlier. However, I mostly see including them as a way to support the claims we've been making throughout the paper, so I could definitely imagine an argument for including them earlier for specific examples so that saying ``the model sees..." is less speculatory...}
 
-\mt{Until this point, we have mostly been speculating as to what the model ``sees" when making its predictions. In fact, it is relatively easy to verify these claims using heatmaps.} Belonging to a category of techniques called class activation map (CAM) visualizations, a heatmap is a visual diagnostic tool that highlights the portions of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image. \fix{Many of these heatmaps illustrate that multiple classes share certain features, which understandably confuses the model.} \fix{ADD EER BORDER TO HEATMAP CODE.... grrrr}
+\mt{Until this point, we have mostly been speculating as to what the model ``sees" when making its predictions. In fact, it is relatively easy to verify these claims using heatmaps.} Belonging to a category of techniques called class activation map (CAM) visualizations, a heatmap is a visual diagnostic tool that highlights the portions of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image. \fix{Many of these heatmaps illustrate that multiple classes share certain features, which understandably confuses the model.} \fix{Add EER border to heatmaps}
+
+\fix{Choose three heatmaps:
+\begin{itemize}
+\item An image with multiple true shapes that the model clearly predicts well, to prove that it has learned the features we think it should
+\item An image with high quad/tri/poly confusion, but the model uses appropriate features to make educated guesses
+\item An image with no true classes but would yield false positives (e.g., corks, puzzle pieces) to show that there will always be weird shapes that our classification can't be expected to cover, but our model will still behave reasonably enough when encountering these cases.
+\end{itemize}}
 
 %\fix{Chosen heatmaps are up for debate!}
 
