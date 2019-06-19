@@ -154,7 +154,7 @@ pred_prob_plot <- function(img_path, model, classes = default_classes,
     w <- h <- .975
   }
 
-  ggplot() +
+  g <- ggplot() +
     geom_tile(aes(y = idx, x = as.numeric(factor(class)),
                   fill = value, color = yes,
                   width = w, height = h),
@@ -164,17 +164,23 @@ pred_prob_plot <- function(img_path, model, classes = default_classes,
               hjust = 0.5, vjust = 0.5) +
     scale_fill_gradient("Predicted\nProbability", low = "white",
                         high = "cornflowerblue",limits = c(0, 1)) +
-    scale_color_manual(values = cols) +
+    scale_color_manual(values = cols, guide = "none") +
     features_xraster +
     coord_fixed() +
     scale_x_continuous(limits = c(-0.5, 9.5), breaks = 1:9,
                        labels = default_classes, expand = c(0,0)) +
     scale_y_continuous(limits = c(.5, length(img_path) + .5), expand = c(0,0)) +
     theme(axis.text.y = element_blank(), axis.title = element_blank(),
-          axis.ticks.y = element_blank()) +
-    guides(color = guide_legend(title = "Above EER", order = 2,
-                                override.aes = list(fill = NA)),
-           fill = guide_colorbar(order = 1))
+          axis.ticks.y = element_blank())
+
+  if(sum(eer) == length(classes)) {
+    l <- geom_blank()
+  } else {
+    l <- guides(color = guide_legend(title = "Above EER", order = 2,
+                                     override.aes = list(fill = NA)),
+                fill = guide_colorbar(order = 1))
+  }
+     g + l
 }
 
 # --- # Heatmaps # -------------------------------------------------------------
