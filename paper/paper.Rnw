@@ -425,7 +425,7 @@ eers <- purrr::map_dbl(aucs$data$eer, function(x){x$thresholds}) %>%
   setNames(classes)
 @
 
-<<exemplars, fig.cap = "Examples containing a single shape", fig.pos = "p!", out.width = "100%", cache = F>>=
+<<exemplars, fig.cap = "Examples containing a single shape", fig.pos = "p!", out.width = "100%", cache = T>>=
 single_exemplars <- list.files(file.path(wd, "images", "consistency",
                                          "single-exemplar"), full.names = T)
 multi_exemplars <- list.files(file.path(wd, "images", "consistency",
@@ -434,9 +434,11 @@ pred_prob_plot(rev(c(single_exemplars, multi_exemplars)),
                loaded_model, sort = F, eer = eers)
 @
 
-\mt{While figure \ref{fig:exemplars} shows representative examples of classifications across multiple shape categories, it is also useful to examine many cases within a given shape to get a sense of model consistency.} \mt{\autoref{fig:circle-text-consistency} shows a number of images containing circles and/or text. The top four rows show text contained within a separate, distinct circle shape, and the next five rows show circles represented as the letter ``o" in text. The remaining images contain only one of either text or circles, as well as other possible shape categories. In particular, the first two of these images contain text that use the capital letter ``G", the next two images contain no circular shapes, and the final \fix{N} images contain pure circles that do not appear to belong to text. The model is able to identify the circle in all cases where a circle is truly present, regardless of whether the circle is part of the text or it is distinct; however, the circle prediction is also strong in three of the four images that do not contain a circle, which indicates that the model is having dificulty distinguishing the two categories. This confusion is likely due to the frequency of images which contain both circles and text: text is present in \Sexpr{100 * round(sum(as.logical(grepl("circle", dfunion$name) & grepl("text", dfunion$name))) / sum(grepl("circle", dfunion$name)), 2)}\% of our labeled images containing circles, and circles are present in \Sexpr{100 * round(sum(as.logical(grepl("circle", dfunion$name) & grepl("text", dfunion$name))) / sum(grepl("text", dfunion$name)), 2)}\% of our images containing text.} In addition, the distinction between a circle and an ``o" comes from the context around the shape, which is much more difficult for the model to parse than simply detecting a shape. More importantly, this behavior does not suggest poor model performance as much as a weakness of the classification scheme, which will be discussed in a later section.
+\mt{While figure \ref{fig:exemplars} shows representative examples of classifications across multiple shape categories, it is also useful to examine many cases within a given shape to get a sense of model consistency.} \mt{\autoref{fig:circle-text-consistency} shows a number of images containing circles and/or text. The top four rows show text contained within a separate, distinct circle shape, and the next five rows show circles represented as the letter ``o" in text. The remaining images contain only one of either text or circles, as well as other possible shape categories. In particular, the first two of these images contain text that use the capital letter ``G", the next two images contain no circular shapes, and the final \fix{N} images contain pure circles that do not appear to belong to text. The model is able to identify the circle in all cases where a circle is truly present, regardless of whether the circle is part of the text or it is distinct; however, the circle prediction is also strong in three of the four images that do not contain a circle, which indicates that the model is having dificulty distinguishing the two categories. This confusion is likely due to the frequency of images which contain both circles and text: text is present in \Sexpr{100 * round(sum(as.logical(grepl("circle", dfunion$name) & grepl("text", dfunion$name))) / sum(grepl("circle", dfunion$name)), 2)}\% of our labeled images containing circles, and circles are present in \Sexpr{100 * round(sum(as.logical(grepl("circle", dfunion$name) & grepl("text", dfunion$name))) / sum(grepl("text", dfunion$name)), 2)}\% of our images containing text. In addition, the distinction between a circle and an ``o" comes from the context around the shape, which is much more difficult for the model to parse than simply detecting a shape. More importantly, this behavior does not suggest poor model performance as much as a weakness of the classification scheme, which will be discussed in a later section.}
 
-<<circle-text-consistency, fig.cap = "Text with circles or circle-like shapes", fig.pos = "p!", out.width = "100%", cache = F>>=
+\mt{Side note: I keep futzing with this section. I am going to forcibly move on and welcome Susan's feedback, and not allow myself to change any more of the consistency plots.}
+
+<<circle-text-consistency, fig.cap = "Text with circles or circle-like shapes", fig.pos = "p!", out.width = "100%", cache = T>>=
 circle_text <- list.files(file.path(wd, "images", "consistency", "circle-text"), full.names = T)
 pred_prob_plot(rev(circle_text), loaded_model, sort = F, eer = eers)
 @
@@ -445,8 +447,7 @@ pred_prob_plot(rev(circle_text), loaded_model, sort = F, eer = eers)
 
 \mt{\paragraph{Confusion Matrix}}
 \mt{Figures \ref{fig:exemplars} and \ref{fig:circle-text-consistency} show predictions for a number of individual images. Many of the misclassifications in these examples, however, are not just seen in individual images, but rather exist systematically between certain classes.} A confusion matrix is a type of visualization that summarizes the relationships between the labels assigned to an image and the labels predicted by the model across all test data, and is a helpful diagnostic tool to understand which classes are systematically misclassified. \mt{The confusion matrix for \fix{our model} is presented in \autoref{fig:confusion_matrix}}. %mt{Each value in the matrix represents the probability of assigning the label associated with that value's corresponding row, conditional upon the image truly belonging to the category associated with the value's column. Thus, }
-The values along the diagonal represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; however, since a single image may truly contain multiple shapes, the values have been adjusted to remove the effect of any true positives from the calculation of false positive proportions. For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any images that truly contains both triangles and quadrilaterals are removed before calculating the proportion of false quadrilateral labels. \mt{As a result of this adjustment, the off-diagonal values of the confusion matrix are the proportion of images within a true class (column-wise) that are falsely labeled as containing another class that has not been labeled in the image (row-wise).}%\svp{I can't remember exactly how we're doing that, but we may want to look more closely at that - if we set everything to NA instead of 0, the rate calculations would be higher than expected}
- \mt{Note that this matrix is not symmetric---the proportion of images containing text that are falsely predicted to contain circles is not necessarily equal to the proportion of images containing circles that are falsely predicted to contain text.}
+The values along the diagonal \mt{of the matrix} represent the proportion of true positives captured within each category. The off-diagonal values represent the proportion of false positives for each shape pairing; however, since a single image may truly contain multiple shapes, the values have been adjusted to remove the effect of any true positives from the calculation of false positive proportions. For example, to calculate the proportion of images that contain triangles but are being falsely labeled as containing quadrilaterals, any images that truly contains both triangles and quadrilaterals are removed before calculating the proportion of false quadrilateral labels. \mt{As a result of this adjustment, the off-diagonal values of the confusion matrix are the proportion of images within a true class (column-wise) that are falsely labeled as containing another class that has not been labeled in the image (row-wise). Note that this matrix is not symmetric---the proportion of images containing text that are falsely predicted to contain circles is not necessarily equal to the proportion of images containing circles that are falsely predicted to contain text.}
 
 <<confusion_matrix, fig.width = 9, fig.height = 8, out.width = "\\textwidth", fig.cap = "Confusion matrix, showing on the diagonal the correct classification rate and on the off-diagonal, classification errors. Note that in multi-label images, correct off-diagonal labels have been excluded from the calculation of false positives.", fig.scap = "Confusion matrix, with correct and incorrect model classifications.", dpi = 600>>=
 get_confusion_matrix(predictions = preds, classes = classes,
@@ -468,26 +469,38 @@ get_confusion_matrix(predictions = preds, classes = classes,
         panel.spacing = unit(c(0, 0, 0, 0), "mm"))
 @
 
-The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles produce a large number of false positive predictions into other categories, as evidenced by the\mt{ir} vertical bands. It is also apparent that circles and text are commonly confused, which supports Another interesting artifact in \autoref{fig:confusion_matrix} is that circles are often misclassified as text, and text is often mislabeled as containing circles.
+The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles produce a large number of false positive predictions into other categories, as evidenced by the vertical bands \mt{for these categories}. It is also apparent that circles and text are commonly confused, which supports our earlier obsesrvartions from \autoref{fig:circle-text-consistency} that these two classes are difficult for the model to distinguish.
 
-\fix{(Transition) We have identified three possible causes for systematic misclassification: incorrect labels, low contrast, and variability within classes/overlap between classes.}
+\subsection{Model Diagnostics}
+After examining model performance, both in specific cases and systematically across classes, there seem to be two primary reasons for misclassifications: poor image contrast, and \fix{overlapping features between categories.}
 
-%One reason for these misclassifications is that not all of the images used in model training are accurately labeled: in some cases, the labels have not \mt{yet} been updated after labeling guidelines have changed. The confusion between text and circles is a natural consequence of the overlap between geometric shapes and components of written text; it is not indicative of a lack of fit as much as a weakness in the classification system used to define the model.
+\paragraph{Image Contrast}
+\mt{As described earlier, the images used for this research were web-scraped from online retailers before being labeled and cropped. One consequence of using outsole images instead of impressions is the impact of colors in the image. Features from outsoles that are primarily black or white in color are typically not as prominent as features from images with more varied color schemes; as a result, the features detected by the model base} \fix{are not well defined, which is propogated through both model training and prediction of new images.} \mt{In other words, the model 'learns' that, when there are few meaningful features with which to determine which shapes are present, the best strategy for minimizing loss is to predict diffuse probabilities across many classes, as seen in \autoref{fig:low-contrast-consistency}.}
 
-\paragraph{Contrast}
-
-\fix{Low contrast images are difficult to predict because the features are not prominent. The model has 'learned' that predicting diffuse probabilities across the classes minimizes loss, so it tends to assign diffuse probabilities to low contrast images. Contrast correction seems to improve predictions, but the diffuse probability strategy persists, so we will incorporate contrast correction into model training.}
-
-<<low-contrast-consistency, fig.cap = "Images with low contrast, before and after correction", fig.pos = "p!", out.width = "100%", cache = T>>=
-lowcontrast <- list.files(file.path(wd, "images", "consistency", "low-contrast"), full.names = T)
+<<low-contrast-consistency, fig.cap = "Images with low contrast", fig.pos = "p!", out.width = "100%", cache = F>>=
+lowcontrast <- list.files(file.path(wd, "images", "consistency", "low-contrast2"), full.names = T)
 pred_prob_plot(lowcontrast, loaded_model, sort = F, eer = eers)
 @
 
-\paragraph{Brand Investigations}
+\mt{Note to self: If the final heatmap choices have strong indication of 'searching' the edges of images, change the problem ``low contrast" (above) to ``poor image quality" so this section can cover both contrast issues \emph{and} the consequences of cropping (which changes the image and, thus, the prediction). Otherwise, if there's no compelling reason to address cropping, I couldn't find many examples during a quick glance through test images, so it doesn't seem worth trying too hard to add it.}
 
-One possible explanation for the poor performance of some categories is the amount of variability within the shapes. \fix{For example, as seen in \autoref{fig:brands-within-shapes}, a large proportion of bowties come from Birks; thus, the model learns bowties from Birks well, which leads to more accurate predictions of new bowtie images that come from Birks. There is no similar dominance in categories like quads. Instead, quads are highly variable  and come from a wide range of brands, so it is harder for the model to learn which set of features designate a quadrilateral. Since a large number of features are then associated with quads, the model gets more easily confused. When it sees some of those same features in other classes, it tries to guess quad. This is further explored in the next section.}
+%The confusion between text and circles is a natural consequence of the overlap between geometric shapes and components of written text; it is not indicative of a lack of fit as much as a weakness in the classification system used to define the model.
 
-\mt{That was a really quick and dirty version of what I'm trying to say... Am I missing any big points, before I try to expand it and clean up the technical part of the writing?}
+\paragraph{Feature Overlap}
+%\paragraph{Brand Investigations}
+\mt{Given the way we have defined our categories, there are a number of features (such as lines, angles, and curves) that are not unique to only one category. For example:
+\begin{itemize}
+\item a triangle may be made up of three acute angles, but a quad can also contain three acute angles.
+\item the only distinction between an ``o" and a circle is whether there is more text around it.
+\item the only difference between lines and thin repeating quads are the ends of the shapes.
+\end{itemize}
+}
+
+\mt{To detect these shapes, the model is doing a huge amount of feature integration beyond just detecting the presence of raw lines, angles, and curves. A correct classification requires the detection and integration of (often) relatively large features (with respect to filters only a few pixels wide, and also that one feature may take up the whole 256x256 pixel image). So the model already has a tough time learning to predict an image holistically.}
+
+\mt{This issue is exacerbated by the variability of images within a class. A quadrilateral isn't just a square or rectangle with 4 right angles; it can also be a parallelogram, diamond, trapezoid, chevron, or anything else that has four sides. In general, some of our identified shapes are very common on outsoles and appear in our data in many different forms, which further widens the sets of features the model must learn to associate with a single class. Unfortunately, by associating even more possible features for a single category, the number of features that then overlap between categories also incresases.}
+
+\mt{\autoref{fig:class-characteristic-barchart} shows the number of images labeled within each category; the largest categories also tend to have the most variability in its labeled images. This is supported by \autoref{fig:brand-plots}, which breaks down, by proportion, the top ten most frequent brands in the labeled data for each class. The figure shows that, for example,} a relatively large proportion of bowties in our labeled data are contributed by images of Birkenstocks. Since the bowties on Birkenstocks tend to be similar in shape and size, the model is able to create a relatively stable definition of bowties and thus predicts new images of bowties relatively well. There is no similar consistency in categories like quadrilaterals. \autoref{fig:brand-plots} indicates that no one brand makes up more than 3\% of our labeled quadrilateral images. This suggests that the quadrilaterals in our labeled data are more likely to come in a variety of shapes and sizes, so it is more difficult for the model to learn which set\mt{s} of features designate a quadrilateral.
 
 <<brand-plots, out.width = "100%", fig.cap = "Proportions of top 10 shoe brands in our labeled dataset within each shape category, sorted by prevalence. Brand text is present when the brand makes up more than five percent of labeled shoes for the shape category. Some shapes, like bowtie and polygon, are relatively dominated by a small number of brands while other shapes, such as text and quad, are comprised of a large number of brands. Typically, model predictions are best for shape categories without much variability, which, in general, coincides with shapes dominated by a small number of brands.">>=
 img_names <- dfunion$filename %>% basename() %>% as.vector
@@ -553,13 +566,11 @@ ggplot(data = brand_prop_by_feature_10) +
   ggtitle("Proportion of Labeled Features by Brand")
 @
 
-\paragraph{Model Diagnostics}
+\mt{Note to self: I feel like I want the heatmaps concentrated in one spot, and it would feel like a strange interjection to explain them earlier. However, I mostly see including them as a way to support the claims we've been making throughout the paper, so I could definitely imagine an argument for including them earlier for specific examples so that saying ``the model sees..." is less speculatory...}
 
-Belonging to a category of techniques called class activation map (CAM) visualizations, a heatmap is a visual diagnostic tool that highlights the portions of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image. \fix{Many of these heatmaps illustrate that multiple classes share certain features, which understandably confuses the model.}
+\mt{Until this point, we have mostly been speculating as to what the model ``sees" when making its predictions. In fact, it is relatively easy to verify these claims using heatmaps.} Belonging to a category of techniques called class activation map (CAM) visualizations, a heatmap is a visual diagnostic tool that highlights the portions of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image. \fix{Many of these heatmaps illustrate that multiple classes share certain features, which understandably confuses the model.} \fix{ADD EER BORDER TO HEATMAP CODE.... grrrr}
 
-%\fix{I picked the heatmaps I thought illustrated the point best, but didn't modify them heavily yet. How many do we want to include, and do we want to highlight model challenges or just focus on the point that CoNNOR sees what we see?} \svp{I think it's worth highlighting the fact that we'll never get a model that's perfect because that curly s is pretty much a circle, and there will always be weird shapes that partially activate different categories.}
-
-\fix{Susan, please generate these heatmaps and move them to the "static" folder. My computer still has issues with the transparent layer of the heatmap, so it's probably easiest to do what we did for my CC and have you generate the images so they turn out correctly. Once I can see them all, I'll decide which three (or so) heatmaps best illustrate the point that shape categories have similar features that (understandably) confuse the model and I'll write about those specific heatmaps.}
+%\fix{Chosen heatmaps are up for debate!}
 
 <<setup-heatmap>>=
 imgs <- list.files(file.path(wd, "images", "heatmaps", "raw"), full.names = T)
@@ -575,27 +586,31 @@ if(!dir.exists(h_imgdir)) {dir.create(h_imgdir)}
 
 calc_heatmap(imgs[which(grepl("chevron-circle", imgs))], loaded_model) %>%
   prune_heatmap(c("chevron", "quad", "circle")) %>%
-  create_composite(save_file = T, outdir = h_imgdir)
+  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
 
 calc_heatmap(imgs[which(grepl("corks", imgs))], loaded_model) %>%
   prune_heatmap(c("star", "text", "circle")) %>%
-  create_composite(save_file = T, outdir = h_imgdir)
+  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
 
 calc_heatmap(imgs[which(grepl("text", imgs))], loaded_model) %>%
   prune_heatmap(c("text", "circle", "line")) %>%
-  create_composite(save_file = T, outdir = h_imgdir)
+  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
 
 calc_heatmap(imgs[which(grepl("triangle", imgs))], loaded_model) %>%
   prune_heatmap(c("triangle", "quad", "chevron")) %>%
-  create_composite(save_file = T, outdir = h_imgdir)
+  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
 
 calc_heatmap(imgs[which(grepl("star", imgs))], loaded_model) %>%
   prune_heatmap(c("star", "bowtie", "polygon")) %>%
-  create_composite(save_file = T, outdir = h_imgdir)
+  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
 
 calc_heatmap(imgs[which(grepl("polygon", imgs))], loaded_model) %>%
   prune_heatmap(c("star", "chevron", "polygon")) %>%
-  create_composite(save_file = T, outdir = h_imgdir)
+  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
+
+calc_heatmap(imgs[which(grepl("other", imgs))], loaded_model) %>%
+  #prune_heatmap(c("star", "chevron", "polygon")) %>%
+  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
 
 heatmaps <- list.files(imgdir, pattern = "^heatmap")
 @
@@ -612,6 +627,10 @@ knitr::include_graphics(heatmaps[grepl("text", heatmaps)])
 
 <<corks-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing none of the target classes.", fig.cap = "This outsole shows repeated outlines of corks, which do not fall into any of the nine classes; the concave corners where the corks overlap are predicted to be stars, and the round edges lead to predictions of circles.">>=
 knitr::include_graphics(heatmaps[grepl("corks", heatmaps)])
+@
+
+<<puzzle-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing none of the target classes.", fig.cap = "This outsole shows repeated outlines of puzzle pieces, which do not fall into any of the nine classes.">>=
+knitr::include_graphics(heatmaps[grepl("other", heatmaps)])
 @
 
 
