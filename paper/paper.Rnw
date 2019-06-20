@@ -556,9 +556,10 @@ ggplot(data = brand_prop_by_feature_10) +
   ggtitle("Proportion of Labeled Features by Brand")
 @
 
-\mt{Note to self: I feel like I want the heatmaps concentrated in one spot, and it would feel like a strange interjection to explain them earlier. However, I mostly see including them as a way to support the claims we've been making throughout the paper, so I could definitely imagine an argument for including them earlier for specific examples so that saying ``the model sees..." is less speculatory...}
+% \mt{Note to self: I feel like I want the heatmaps concentrated in one spot, and it would feel like a strange interjection to explain them earlier. However, I mostly see including them as a way to support the claims we've been making throughout the paper, so I could definitely imagine an argument for including them earlier for specific examples so that saying ``the model sees..." is less speculatory...}
 
-\mt{Until this point, we have mostly been speculating as to what the model ``sees" when making its predictions. In fact, it is relatively easy to verify these claims using heatmaps.} Belonging to a category of techniques called class activation map (CAM) visualizations, a heatmap is a visual diagnostic tool that highlights the portions of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image. \fix{Many of these heatmaps illustrate that multiple classes share certain features, which understandably confuses the model.} \fix{Add EER border to heatmaps}
+\svp{We have proposed several hypotheses to explain why the model's predictions are not entirely consistent with manual labels on the images. We can test these hypotheses by examining what the model ``sees" when making its predictions, using heatmaps, or class activation maps (CAMs).}
+\svp{Heatmaps or Class Activation Maps} are a visual diagnostic tool that highlights the \svp{areas} of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image. \svp{In these heatmaps, we can confirm that multiple classes have common features, resulting in misclassifications}.  \fix{Add EER border to heatmaps}
 
 \fix{Choose three heatmaps:
 \begin{itemize}
@@ -622,7 +623,7 @@ knitr::include_graphics(heatmaps[grepl("chevron-circle", heatmaps)])
 knitr::include_graphics(heatmaps[grepl("text", heatmaps)])
 @
 
-<<corks-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing none of the target classes.", fig.cap = "This outsole shows repeated outlines of corks, which do not fall into any of the nine classes; the concave corners where the corks overlap are predicted to be stars, and the round edges lead to predictions of circles.">>=
+<<corks-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing none of the target classes.", fig.cap = "This outsole shows repeated outlines of corks, which do not fall into any of the nine classes; the concave corners where the corks overlap are predicted to be stars, and the round edges lead to predictions of circles.\\svp{Not really... only 0.03 probability}">>=
 knitr::include_graphics(heatmaps[grepl("corks", heatmaps)])
 @
 
