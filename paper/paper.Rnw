@@ -222,8 +222,7 @@ In this paper, we demonstrate the use of transfer learning to automatically iden
 
 \paragraph{Annotated Training Data}
 \fix{The first sentence is a repeat from earlier in the paper, so we may want to move directly into the feature set we're using. Thoughts?}
-\mt{Yeah, I think this kind of introduction belongs at the beginning of the paper. But I think we still want to mention the Gross features here and how we modified them.}
-Class characteristics are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes (e.g., all shoes of a specific brand and size). A sufficiently well-defined set of features can be used to separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}; the set of features used in that study included circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. After consulting with practitioners, we developed a set of categories suitable for automatic recognition by convolutional neural networks. These modifications were necessary because some of the definitions used in Gross et al. (2013) require contextual spatial information which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class \mt{in our feature set}.
+\mt{\sout{Class characteristics are characteristics which can be used to exclude shoes from a match at a crime scene, but cannot be used for individualized matching because they are shared by many shoes (e.g., all shoes of a specific brand and size).}} \mt{Existing research indicates that a} sufficiently well-defined set of features can be used to separate shoes into make and model categories \citep{grossVariabilitySignificanceClass2013}; the set of features used in that study included circle/oval, crepe, herringbone, hexagon, parallel lines, logo/lettering/numbering, perimeter lugs, star, and other. After consulting with practitioners, we developed a set of categories suitable for automatic recognition by convolutional neural networks. These modifications were necessary because some of the definitions used in Gross et al. (2013) require contextual spatial information which is not preserved during labeling (for example, lugs are required to be on the perimeter of the shoe). \autoref{tab:class-char-examples} shows three examples of each class \mt{in our feature set}.
 
 The categories we use in this study are operationally defined as follows:
 \begin{description}
@@ -257,7 +256,7 @@ Triangle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/cl
 \caption[Geometric elements used to classify tread patterns.]{A set of geometric elements used to classify tread patterns. Categories modified from \cite{grossVariabilitySignificanceClass2013}.}\label{tab:class-char-examples}
 \end{table}
 
-Thousands of outsole images were scraped from online shoe retail sites and annotated using LabelMe, a tool for image annotation in computer vision problems \citep{labelme}. After annotation, the minimum bounding rectangle of the region is identified and the image is cropped to that area; subsequently, the cropped image is scaled to 256 x 256 pixels. During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
+Thousands of outsole images were \mt{obtained} from online shoe retail sites and annotated using LabelMe, a tool for image annotation in computer vision problems \citep{labelme}. After annotation, the minimum bounding rectangle of the region is identified and the image is cropped to that area; subsequently, the cropped image is scaled to 256 x 256 pixels. During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
 
 \begin{figure}[hbt]
 \centering
@@ -286,7 +285,7 @@ annotated_imgs %>%
         legend.background = element_rect(fill = "white"))
 @
 
-Transfer learning substantially reduces the amount of data required to train a CNN by several orders of magnitude, but labeled images are still difficult to generate on a large scale. Thus, to make the most efficient use of the existing labeled data, we enlarge the training data using a process called image augmentation \citep{krizhevskyImageNetClassificationDeep2012}. Augmentation is the transformation of original input data using image operations such as cropping, zoom, skew, rotation, and color balance modification in order to distort or alter the image while maintaining the essential features corresponding to the label. This process reduces the potential for overfitting the model to the specific set of image data used during the training process, and also increases the amount of data available for training. Examples of pre- and post-augmentation images are shown in \autoref{fig:augmented}.
+Transfer learning reduces the amount of data required to train a CNN by several orders of magnitude, but labeled images are still difficult to generate on a large scale. Thus, to make the most efficient use of the existing labeled data, we enlarge the training data using a process called image augmentation \citep{krizhevskyImageNetClassificationDeep2012}. Augmentation is the transformation of original input data using image operations such as cropping, zoom, skew, rotation, and color balance modification in order to distort or alter the image while maintaining the essential features corresponding to the label. This process reduces the potential for overfitting the model to the specific set of image data used during the training process, and also increases the amount of data available for training. Examples of pre- and post-augmentation images are shown in \autoref{fig:augmented}.
 
 \begin{figure}
 \centering
@@ -436,7 +435,7 @@ While figure \ref{fig:exemplars} shows representative examples of classification
 % \mt{Side note: I keep futzing with this section. I am going to forcibly move on and welcome Susan's feedback, and not allow myself to change any more of the consistency plots.} \svp{Good strategy. Biggest feedback is to change the text to actually match the image as it is currently, but I get why you stopped and I'm proud of you for noticing that it was a problem and finding a solution. :) Nice job.}
 \mt{As the above section is right now, the text should match the images... I had some issues with image sorting, because Windows will put 11 before 2 but not before 02, so maybe Linux has a different behavior that's resorting the images? I also cache them to speed up recompiling, so maybe something's up there?}
 
-<<circle-text-consistency, fig.cap = "Text with circles or circle-like shapes", fig.pos = "p!", out.width = "100%", cache = T>>=
+<<circle-text-consistency, fig.cap = "Text with circles or circle-like shapes", fig.pos = "p!", out.width = "100%", cache = T, fig.width = 8, fig.height = 12>>=
 circle_text <- list.files(file.path(wd, "images", "consistency", "circle-text"), full.names = T)
 pred_prob_plot(rev(circle_text), loaded_model, sort = F, eer = eers)
 @
@@ -474,7 +473,7 @@ The horizontal band in \autoref{fig:confusion-matrix} indicates that quadrilater
 After examining model performance, both in specific cases and systematically across classes, there seem to be two primary reasons for misclassifications: poor image contrast, and overlapping features between categories.
 
 \paragraph{Image Contrast}
-As described earlier, the images used for this research were obtained \mt{:D} from online retailers before being labeled and cropped. One consequence of using outsole images instead of impressions is the impact of colors in the image. Features from outsoles that are primarily black or white in color are typically not as prominent as features from images with more varied color schemes; as a result, the features in low contrast images are not easily resolved by the filters; this is propogated through both model training and prediction of new images. In other words, the model 'learns' that when there are few meaningful features with which to determine which shapes are present, the best strategy for minimizing loss is to predict diffuse probabilities across many classes, as seen in \autoref{fig:low-contrast-consistency}.
+As described earlier, the images used for this research were obtained from online retailers before being labeled and cropped. One consequence of using outsole images instead of impressions is the impact of colors in the image. Features from outsoles that are primarily black or white in color are typically not as prominent as features from images with more varied color schemes. As a result, the features in low contrast images are not easily resolved by the filters; this is propogated through both model training and prediction of new images. In other words, the model 'learns' that when there are few meaningful features with which to determine which shapes are present, the best strategy for minimizing loss is to predict diffuse probabilities across many classes, as seen in \autoref{fig:low-contrast-consistency}.
 
 <<low-contrast-consistency, fig.cap = "Images with low contrast", fig.pos = "p!", out.width = "100%", cache = F>>=
 lowcontrast <- list.files(file.path(wd, "images", "consistency", "low-contrast2"), full.names = T)
@@ -492,14 +491,13 @@ We have defined our categories through consultation with practitioners and modif
 \item the only difference between lines and thin repeating quads are the ends of the shapes.
 \end{itemize}
 
-
 To detect these shapes, the model is doing a significant amount of feature integration beyond just detecting the presence of raw lines, angles, and curves. A correct classification requires the detection and integration of (often) relatively large features (with respect to filters only a few pixels wide); in addition, features can be relatively small relative to the 256x256 image, or may take up the entire image. This wide variation in relative size of the features, combined with the variability of different features across classes, leads to a number of common (but understandable) misclassifications.
 
 This is one area where the CNN's predictions do not match human labels; in part, this is because even with some wider context, the CNN does not use both bottom-up feature integration and top-down object identification based on wider experience - as a result, it cannot easily differentiate between text and constituent shapes within the text.
 
 This issue is exacerbated by the variability of images within a class. A quadrilateral isn't just a square or rectangle with 4 right angles; it can also be a parallelogram, diamond, trapezoid, part of a chevron, or anything else that has four sides. In general, some of our identified shapes are very common on outsoles and appear in our data in many different forms, which further widens the sets of features the model must learn to associate with a single class. Unfortunately, by associating even more possible features with a single category, the number of features that then overlap between categories also increases.
 
-\autoref{fig:class-characteristic-barchart} shows the number of images labeled within each category; the largest categories also tend to have the most variability in labeled images. This is supported by \autoref{fig:brand-plots}, which breaks down, by proportion, the top ten most frequent brands in the labeled data for each class. The figure shows that, for example, a relatively large proportion of bowties in our labeled data are contributed by images of Birkenstocks. Since the bowties on Birkenstocks tend to be similar in shape and size, the model is able to create a relatively stable definition of bowties and thus predicts new images of bowties well. There is no similar consistency in categories like quadrilaterals. \autoref{fig:brand-plots} indicates that no one brand makes up more than 3\% of our labeled quadrilateral images. This suggests that the quadrilaterals in our labeled data are more likely to come in a variety of shapes and sizes, so it is more difficult for the model to learn which set or sets of features correspond to a quadrilateral.
+The shape categories with the largest number of images, shown in \autoref{fig:class-characteristic-barchart}, also tend to have the most variability in labeled images. This is supported by \autoref{fig:brand-plots}, which breaks down, by proportion, the top ten most frequent brands in the labeled data for each class. The figure shows that, for example, a relatively large proportion of bowties in our labeled data are contributed by images of Birkenstocks. Since the bowties on Birkenstocks tend to be similar in shape and size, the model is able to create a relatively stable definition of bowties and thus predicts new images of bowties well. There is no similar consistency in categories like quadrilaterals. \autoref{fig:brand-plots} indicates that no one brand makes up more than 4\% of our labeled quadrilateral images. This suggests that the quadrilaterals in our labeled data are more likely to come in a variety of shapes and sizes, so it is more difficult for the model to learn which set or sets of features correspond to a quadrilateral.
 
 <<brand-plots, out.width = "100%", fig.width = 7, fig.height = 5, fig.cap = "Proportions of top 10 shoe brands in our labeled dataset within each shape category, sorted by prevalence. Brand text is present when the brand makes up more than five percent of labeled shoes for the shape category. Some shapes, like bowtie and polygon, are relatively dominated by a small number of brands while other shapes, such as text and quad, are comprised of a large number of brands. Typically, model predictions are best for shape categories without much variability, which, in general, coincides with shapes dominated by a small number of brands.">>=
 img_names <- dfunion$filename %>% basename() %>% as.vector
@@ -546,6 +544,7 @@ brand_prop_by_feature <- df_shoes_long %>%
   mutate(brand_cat = ifelse(row_number() <= 10, brand, "other")) %>%
   group_by(feature) %>%
   mutate(rank = pmin(row_number(), 11))
+
 brand_prop_by_feature_10 <- brand_prop_by_feature %>%
   group_by(feature, brand_cat, rank) %>%
   summarize(prop = sum(prop)) %>%
@@ -558,8 +557,10 @@ brand_prop_by_feature_10 <- brand_prop_by_feature %>%
          rank = ifelse(rank == 11, NA, rank))
 
 ggplot(data = brand_prop_by_feature_10) +
-  geom_bar(aes(x = feature, y = prop, fill = factor(rank)), position = "stack", stat = "identity", color = "black") +
-  geom_text(aes(x = feature, y = 1-mid, label = brand_cat), data = filter(brand_prop_by_feature_10, prop > .05), size = 3) +
+  geom_bar(aes(x = feature, y = prop, fill = factor(rank)),
+           position = "stack", stat = "identity", color = "black") +
+  geom_text(aes(x = feature, y = 1-mid, label = brand_cat),
+            data = filter(brand_prop_by_feature_10, prop > .05), size = 2.5) +
   scale_fill_brewer(palette = "Paired", guide = F, na.value = "grey") +
   scale_y_continuous("Proportion") + scale_x_discrete("") +
   ggtitle("Proportion of Labeled Features by Brand")
@@ -569,20 +570,23 @@ ggplot(data = brand_prop_by_feature_10) +
 
 We have proposed several hypotheses to explain why the model's predictions are not entirely consistent with manual labels on the images. We can test these hypotheses by examining what the model ``sees" when making its predictions, using heatmaps, or class activation maps (CAMs). \fix{Heatmaps or Class Activation Maps} are a visual diagnostic tool that highlights the areas of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image. In these heatmaps, we can confirm that multiple classes have common features, resulting in misclassifications.  \fix{Add EER border to heatmaps}
 
-\fix{Choose three heatmaps:
+\fix{Choose three (or four) heatmaps:
 \begin{itemize}
 \item An image with multiple true shapes that the model clearly predicts well, to prove that it has learned the features we think it should
+\item (Seychelles circle/text confusion)
 \item An image with high quad/tri/poly confusion, but the model uses appropriate features to make educated guesses
 \item An image with no true classes but would yield false positives (e.g., corks, puzzle pieces) to show that there will always be weird shapes that our classification can't be expected to cover, but our model will still behave reasonably enough when encountering these cases.
 \end{itemize}}
 
-%\fix{Chosen heatmaps are up for debate!}
+\mt{The captions on the old heatmaps are wrong since we switched models. Pls ignore :)}
+
+\mt{I added EER options to heatmaps, but there are still some not ideal bits (it makes the absence of border look strange), so we can decide how to improve it or whether to use it}
 
 <<setup-heatmap>>=
 imgs <- list.files(file.path(wd, "images", "heatmaps", "raw"), full.names = T)
 @
 
-<<generate-heatmaps, echo = F, eval = F>>=
+<<generate-heatmaps, echo = F, eval = T>>=
 # My computer has troubles with the transparency of the overlay...
 # This code is functional, but highest quality will come from generating these
 # images on Bigfoot and loading them statically.
@@ -590,52 +594,76 @@ imgs <- list.files(file.path(wd, "images", "heatmaps", "raw"), full.names = T)
 h_imgdir <- file.path(imgdir, "heatmaps", "processed")
 if(!dir.exists(h_imgdir)) {dir.create(h_imgdir)}
 
-calc_heatmap(imgs[which(grepl("chevron-circle", imgs))], loaded_model) %>%
-  prune_heatmap(c("chevron", "quad", "circle")) %>%
-  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
+# # Turn all images in "heatmaps/raw" to top-3 heatmaps
+# sapply(imgs, function(x) {
+#   calc_heatmap(x, loaded_model) %>%
+#     prune_heatmap(top_n = 3, sort = "value") %>%
+#     create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
+# })
 
-calc_heatmap(imgs[which(grepl("corks", imgs))], loaded_model) %>%
-  prune_heatmap(c("star", "text", "circle")) %>%
-  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
+calc_heatmap(imgs[which(grepl("Ugg-grey", imgs))], loaded_model) %>%
+  prune_heatmap(top_n = 3, sort = "value") %>%
+  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F,
+                   eer = eers)
 
 calc_heatmap(imgs[which(grepl("text", imgs))], loaded_model) %>%
-  prune_heatmap(c("text", "circle", "line")) %>%
-  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
-
-calc_heatmap(imgs[which(grepl("triangle", imgs))], loaded_model) %>%
-  prune_heatmap(c("triangle", "quad", "chevron")) %>%
-  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
-
-calc_heatmap(imgs[which(grepl("star", imgs))], loaded_model) %>%
-  prune_heatmap(c("star", "bowtie", "polygon")) %>%
-  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
+  prune_heatmap(top_n = 3, sort = "value") %>%
+  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F,
+                   eer = eers)
 
 calc_heatmap(imgs[which(grepl("polygon", imgs))], loaded_model) %>%
-  prune_heatmap(c("star", "chevron", "polygon")) %>%
-  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
+  prune_heatmap(top_n = 3, sort = "value") %>%
+  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F,
+                   eer = eers)
 
-calc_heatmap(imgs[which(grepl("other", imgs))], loaded_model) %>%
-  #prune_heatmap(c("star", "chevron", "polygon")) %>%
-  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
+calc_heatmap(imgs[which(grepl("corks", imgs))], loaded_model) %>%
+  prune_heatmap(top_n = 3, sort = "value") %>%
+  create_composite(save_file = T, outdir = h_imgdir, color_by_label = F,
+                   eer = eers)
+#
+# calc_heatmap(imgs[which(grepl("chevron-circle", imgs))], loaded_model) %>%
+#   #prune_heatmap(c("chevron", "quad", "circle")) %>%
+#   create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
+#
+# calc_heatmap(imgs[which(grepl("triangle", imgs))], loaded_model) %>%
+#   #prune_heatmap(c("triangle", "quad", "chevron")) %>%
+#   create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
+#
+# calc_heatmap(imgs[which(grepl("star", imgs))], loaded_model) %>%
+#   #prune_heatmap(c("star", "bowtie", "polygon")) %>%
+#   create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
+#
+# calc_heatmap(imgs[which(grepl("other", imgs))], loaded_model) %>%
+#   #prune_heatmap(c("star", "chevron", "polygon")) %>%
+#   create_composite(save_file = T, outdir = h_imgdir, color_by_label = F)
 
-heatmaps <- list.files(imgdir, pattern = "^heatmap")
+heatmaps <- list.files(h_imgdir, pattern = "^heatmap", full.names = T)
 @
 
-<<chevron-circle-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing chevrons and circles.", fig.cap = "Chevrons are identified by sharp corners and parallel lines, but the thick line between the two shape sections is falsely identified as a quadrilateral.", fig.pos = "!h">>=
+<<current-heatmaps, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.cap = "Correct or reasonably incorrect heatmaps", echo = F, message = F, warning = F>>=
+knitr::include_graphics(heatmaps[grepl("Ugg-grey", heatmaps)])
+knitr::include_graphics(heatmaps[grepl("text", heatmaps)])
+knitr::include_graphics(heatmaps[grepl("polygon", heatmaps)])
+knitr::include_graphics(heatmaps[grepl("corks", heatmaps)])
+
+sapply(heatmaps, knitr::include_graphics)
+@
+
+<<chevron-circle-heatmap, eval = F, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing chevrons and circles.", fig.cap = "Chevrons are identified by sharp corners and parallel lines, but the thick line between the two shape sections is falsely identified as a quadrilateral.", fig.pos = "!h">>=
 heatmaps <- list.files(file.path(wd, "images", "heatmaps", "static"),
                        pattern = "^heatmap", full.names = T)
 knitr::include_graphics(heatmaps[grepl("chevron-circle", heatmaps)])
 @
 
-<<text-seychelles-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing text.", fig.cap = "This heatmap illustrates that the high probability of a circle is a result of the highly curled tails of the 'S' in the text.">>=
+<<text-seychelles-heatmap, eval = F, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing text.", fig.cap = "This heatmap illustrates that the high probability of a circle is a result of the highly curled tails of the 'S' in the text.">>=
 knitr::include_graphics(heatmaps[grepl("text", heatmaps)])
 @
 
-<<corks-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing none of the target classes.", fig.cap = "This outsole shows repeated outlines of corks, which do not fall into any of the nine classes; the concave corners where the corks overlap are predicted to be stars, and the round edges lead to predictions of circles.\\svp{Not really... only 0.03 probability}">>=
+<<corks-heatmap, eval = F, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing none of the target classes.", fig.cap = "This outsole shows repeated outlines of corks, which do not fall into any of the nine classes; the concave corners where the corks overlap are predicted to be stars, and the round edges lead to predictions of circles.\\svp{Not really... only 0.03 probability}">>=
 knitr::include_graphics(heatmaps[grepl("corks", heatmaps)])
 @
 
-<<puzzle-heatmap, eval = T, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing none of the target classes.", fig.cap = "This outsole shows repeated outlines of puzzle pieces, which do not fall into any of the nine classes.">>=
+<<puzzle-heatmap, eval = F, out.width = ".95\\textwidth", fig.width = 8, fig.height = 6, fig.scap = "Heatmaps of an image containing none of the target classes.", fig.cap = "This outsole shows repeated outlines of puzzle pieces, which do not fall into any of the nine classes.">>=
 knitr::include_graphics(heatmaps[grepl("other", heatmaps)])
 @
 

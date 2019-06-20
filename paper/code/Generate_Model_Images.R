@@ -262,9 +262,26 @@ heatmap_overlay <- function(heatmap, geometry = geometry, width = 256, height = 
     image_resize(geometry, filter = "quadratic")
 }
 
-prune_heatmap <- function(full_heatmap, keep_classes) {
+# Choose specific classes or the number of classes to show
+prune_heatmap <- function(full_heatmap, keep_classes, top_n,
+                          sort = c("name", "value")) {
+
+  if(missing(keep_classes) && missing(top_n)) {
+    warning("No pruning criteria provided.")
+  }
+
+  sort <- match.arg(sort)
   tmp <- full_heatmap
-  idx <- which(tmp$classes %in% keep_classes)
+
+  if(!missing(top_n)) {
+    keep_classes <- names(head(sort(tmp$predictions, decreasing= T), top_n))
+  }
+
+  if(sort == "value") {
+    idx <- sapply(keep_classes, function(x){which(x == tmp$classes)})
+  } else {
+    idx <- which(tmp$classes %in% keep_classes)
+  }
   tmp$heatmap <- tmp$heatmap[idx, , ]
   tmp$predictions <- tmp$predictions[idx]
   tmp$truth <- tmp$truth[idx]
@@ -275,7 +292,7 @@ prune_heatmap <- function(full_heatmap, keep_classes) {
 create_composite <- function(heatmap_data, save_file = F, outdir = ".",
                              td = tempdir(), fixed_labels = T,
                              fail_file = file.path("Images", "poop.jpg"),
-                             color_by_label = T) {
+                             color_by_label = T, eer = NULL) {
 
   # Fix image dimensions
   dim(heatmap_data$img) <- dim(heatmap_data$img)[-1]
@@ -303,7 +320,16 @@ create_composite <- function(heatmap_data, save_file = F, outdir = ".",
   filelist <- rep(blank_img, n_classes)
   unmod_image <- image_composite(blank_img, image, offset = "+22+6") %>%
     # Add label
-    image_annotate("Original Image", color = "black", size = 30, location = "+0+3", gravity = "South")
+    image_annotate("Original Image", color = "black", size = 30,
+                   location = "+0+3", gravity = "South")
+
+  if(!is.null(eer)) {
+    above_eer <- heatmap_data$predictions > eer[heatmap_data$classes]
+  } else{
+    above_eer <- rep(NA, n_classes)
+  }
+
+
 
   for (j in 1:n_classes) {
 
@@ -322,10 +348,17 @@ create_composite <- function(heatmap_data, save_file = F, outdir = ".",
     }
 
 
-    overlay <- heatmap_overlay(heatmap_data$heatmap[j,,], geometry = geometry, tdd = td,
+    overlay <- heatmap_overlay(heatmap_data$heatmap[j,,],
+                               geometry = geometry, tdd = td,
                                width = 14, height = 14, bg = NA, col = pal_col)
 
     if (j %in% heatmap_data$successful_heatmap) {
+      if(is.na(above_eer[j])) {
+        col_j <- "white"
+      } else {
+        col_j <- ifelse(above_eer[j], "navyblue", "gray90")
+      }
+
       # Create blank image with correct bg color
       filelist[j] <- image_blank(300, 300, color = bg_col) %>%
         # Add label
@@ -334,7 +367,10 @@ create_composite <- function(heatmap_data, save_file = F, outdir = ".",
         # add image
         image_composite(image, offset = "+22+6") %>%
         # add overlay
-        image_composite(overlay, offset = "+22+6")
+        image_composite(overlay, offset = "+22+6") %>%
+        image_border(color = col_j, geometry = "2x2")
+
+
     } else {
       filelist[j] <- blank_img %>%
         image_annotate("Failed\nto\ngenerate", color = "black", size = 30, gravity = "Center")
