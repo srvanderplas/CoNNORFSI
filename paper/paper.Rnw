@@ -326,24 +326,24 @@ data.frame(history$metrics) %>%
 Overfitting \svp{occurs} when a model learns the training data so well that its understanding of the categories becomes specific to the training cases, which, in turn, leads to poor prediction of new images that were not in the training set. During the training process, overfitting is indicated when the validation loss begins to increase after reaching a global minimum. Alternately, underfitting occurs if the validation accuracy is still increasing when model optimization is terminated (for instance, between epochs 1 and 10 in \autoref{fig:training-accuracy}), because model performance is still improving with continued training. In \autoref{fig:training-accuracy}, validation accuracy levels off after epoch 20, and validation loss has not yet begun to increase at epoch 30, indicating that the model optimization process was halted at an appropriate epoch.
 
 \subsection{Model Accuracy}
-
-\mt{\textbf{OUTLINE OF RESULTS}
-\begin{itemize}
-\item ROC: shows model performance is generally good, gives broad comparison of class performances
-\item Examples: show what predictions look like, the model isn't perfect, and motivate that some confusions are systematic between specific classes
-\item Confusion Matrix: show patterns in misclassification, motivate diagnostics to explain the cause of common mistakes
-\item Two main reasons for error: image contrast, and overlapping features between classes
-\begin{itemize}
-\item Low contrast: the model can't see features, which affects training and prediction
-\item Overlapping features:
-\begin{itemize}
-\item Many classes share individual features (e.g., lines, angles, curves), so the model already has to integrate features and learn context (e.g., circle vs o)
-\item Some classes are also much more variable (see brand plots), which means the model has to widen its definitions of certain shapes, which makes confusion between classes worse
-\end{itemize}
-\end{itemize}
-\item Heatmaps: 1) verify that the model is using category-appropriate features to make decisions and 2) show examples of understandable mistakes
-\end{itemize}
-}
+%
+% \mt{\textbf{OUTLINE OF RESULTS}
+% \begin{itemize}
+% \item ROC: shows model performance is generally good, gives broad comparison of class performances
+% \item Examples: show what predictions look like, the model isn't perfect, and motivate that some confusions are systematic between specific classes
+% \item Confusion Matrix: show patterns in misclassification, motivate diagnostics to explain the cause of common mistakes
+% \item Two main reasons for error: image contrast, and overlapping features between classes
+% \begin{itemize}
+% \item Low contrast: the model can't see features, which affects training and prediction
+% \item Overlapping features:
+% \begin{itemize}
+% \item Many classes share individual features (e.g., lines, angles, curves), so the model already has to integrate features and learn context (e.g., circle vs o)
+% \item Some classes are also much more variable (see brand plots), which means the model has to widen its definitions of certain shapes, which makes confusion between classes worse
+% \end{itemize}
+% \end{itemize}
+% \item Heatmaps: 1) verify that the model is using category-appropriate features to make decisions and 2) show examples of understandable mistakes
+% \end{itemize}
+% }
 
 \paragraph{Overall Accuracy}
 
