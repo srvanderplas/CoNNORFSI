@@ -457,7 +457,7 @@ get_confusion_matrix(predictions = preds, classes = classes,
         panel.spacing = unit(c(0, 0, 0, 0), "mm"))
 @
 
-The horizontal band in \autoref{fig:confusion_matrix} indicates that quadrilaterals are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles produce a \svp{moderate} number of false positive predictions \svp{in} other categories, as evidenced by the vertical bands for these categories. \fix{I don't really see it for stars...} It is also apparent that circles and text are commonly confused, which supports our earlier obsesrvartions from \autoref{fig:circle-text-consistency} that these two classes are difficult for the model to distinguish, \svp{in part because circles are relatively common components of latin script characters.}
+The horizontal band in \autoref{fig:confusion-matrix} indicates that quadrilaterals are predicted more often than they should be for every true label. Similarly, polygons, stars, and triangles produce a \svp{moderate} number of false positive predictions \svp{in} other categories, as evidenced by the vertical bands for these categories. \fix{I don't really see it for stars...} It is also apparent that circles and text are commonly confused, which supports our earlier obsesrvartions from \autoref{fig:circle-text-consistency} that these two classes are difficult for the model to distinguish, \svp{in part because circles are relatively common components of latin script characters.}
 
 \subsection{Model Diagnostics}
 After examining model performance, both in specific cases and systematically across classes, there seem to be two primary reasons for misclassifications: poor image contrast, and overlapping features between categories.
