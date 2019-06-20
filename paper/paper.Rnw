@@ -640,9 +640,9 @@ Our model was developed using the convolutional base of VGG16 and a newly traine
 
 \mt{
 \begin{itemize}
-\item Many model errors are a result of overlapping geometric features between classes. The variability within certain classes exacerbates the difficulty in defining categories, leading to frequent confusion between circle/text and triangle/quad/polygon
+\item Many model errors are a result of overlapping geometric features between classes. The variability within certain classes exacerbates the difficulty in defining categories, leading to frequent confusion between circle/text and triangle/quad/polygon \svp{This is at least in part due to the features used by practitioners, and partially due to our generalization/operational definition.}
 \item Model predictions also indicate that contrast correction is important, and model should be retrained on cc'd images
-\item Mention cutting off conv block?
+\item Mention cutting off conv block? \svp{Sure, just do it in friendly terms}
 \end{itemize}
 }
 
