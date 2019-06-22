@@ -325,11 +325,9 @@ create_composite <- function(heatmap_data, save_file = F, outdir = ".",
 
   if(!is.null(eer)) {
     above_eer <- heatmap_data$predictions > eer[heatmap_data$classes]
-  } else{
+  } else {
     above_eer <- rep(NA, n_classes)
   }
-
-
 
   for (j in 1:n_classes) {
 
@@ -353,11 +351,6 @@ create_composite <- function(heatmap_data, save_file = F, outdir = ".",
                                width = 14, height = 14, bg = NA, col = pal_col)
 
     if (j %in% heatmap_data$successful_heatmap) {
-      if(is.na(above_eer[j])) {
-        col_j <- "white"
-      } else {
-        col_j <- ifelse(above_eer[j], "navyblue", "gray90")
-      }
 
       # Create blank image with correct bg color
       filelist[j] <- image_blank(300, 300, color = bg_col) %>%
@@ -367,8 +360,13 @@ create_composite <- function(heatmap_data, save_file = F, outdir = ".",
         # add image
         image_composite(image, offset = "+22+6") %>%
         # add overlay
-        image_composite(overlay, offset = "+22+6") %>%
-        image_border(color = col_j, geometry = "2x2")
+        image_composite(overlay, offset = "+22+6")
+
+      if(!is.na(above_eer[j])) {
+        filelist[j] <- filelist[j] %>%
+          image_border(color = ifelse(above_eer[j], "navyblue", "gray90"),
+                       geometry = "2x2")
+      }
 
 
     } else {
