@@ -639,6 +639,11 @@ Although model predictions are generally accurate, there are a number of systema
 Another source of systematic misclassifications stems from the inherent overlap between features of common geometric shapes; since CNNs make predictions via bottom-up feature integration, it is more difficult for the model to distinguish between geometrically similar shapes, such as chevrons and triangles. This issue is exacerbated by high variability of those shapes on outsoles, which requires the model to form a flexible understanding of each shape category, making distinction between similar shapes even more difficult. These issues of overlap and variability are at least in part due to our decision to use the features used by practitioners directly; some of this may also result from our operational definitions of various shapes, which did not take into account the model's capabilities and initial training. While a \fix{full} remedy may not be possible, there may be some modifications to operational class definitions that we can make to optimize labels for model prediction.
 
 
+
+
+
+
+
 %\section{Future Work}
 %\svp{Need to show image contrast stuff to use this paragraph.}
 %Although CoNNOR performs well in its current state, there are still a number of ways to potentially improve prediction accuracy. For one, image contrast  plays a large role in how well the model classifies the geometric shapes present. Thus, exploring methods of color correction, such as histogram normalization, may prove useful for eliminating the effect of contrast on predictions. Geometric features are also relatively simple with respect to the features that are being detected by the final convolutional block of VGG16, as in \autoref{fig:vgg16layers}; it is quite possible that prediction accuracy could improve by directly classifying the features that are output by the fourth block, rather than using the full convolutional base.
