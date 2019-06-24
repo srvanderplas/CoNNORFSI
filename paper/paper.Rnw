@@ -533,7 +533,7 @@ ggplot(data = brand_prop_by_feature_10) +
   ggtitle("Proportion of Labeled Features by Brand")
 @
 
-We have proposed several hypotheses to explain why the model's predictions are not entirely consistent with manual labels on the images. We can test these hypotheses by examining what the model ``sees" when making its predictions, using heatmaps, or class activation maps (CAMs). \fix{Heatmaps or Class Activation Maps} are a visual diagnostic tool that highlights the areas of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image. In these heatmaps, we can confirm that multiple classes have common features, resulting in misclassifications.  \fix{Add EER border to heatmaps}
+We have proposed several hypotheses to explain why the model's predictions are not entirely consistent with manual labels on the images. We can test these hypotheses by examining what the model ``sees" when making its predictions, using heatmaps, or class activation maps (CAMs). \fix{Heatmaps or Class Activation Maps} are a visual diagnostic tool that highlights the areas of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions. In \fix{the figures in this subsection,} heatmaps are shown for a selection of three classes, which are either contained in the image or have high output probabilities, alongside the original image. In these heatmaps, we can confirm that multiple classes have common features, resulting in misclassifications.
 
 \fix{Choose three (or four) heatmaps:
 \begin{itemize}
@@ -632,17 +632,22 @@ knitr::include_graphics(heatmaps[grepl("other", heatmaps)])
 
 \section{Conclusions}
 \svp{Rework this to address 3 main conclusions - 1: NNs work for automatic feature ID, 2: Different levels of feature variability within classes, and 3: correcting for contrast is important.}
+
+% Restate goal
 The goal of this research was to develop a method to automatically identify geometric class characteristics of shoe outsoles. Such a method takes the difficult problem of quantifying outsole features in a given population and lays the groundwork for a tractable solution. A set of geometric class characteristics was defined, based on feature sets currently used by examiners, to both broadly classify a large variety of shoes and to narrow down similarity into a manageable number and type of features for further use in a shoeprint analysis. The final set of features used in this research achieves both goals quite well, and has potential for much finer-grained analysis when recognized features are combined with spatial information and relationships.
 
-Our model was developed using the convolutional base of VGG16 and a newly trained classifier/head to identify the defined set of geometric features. After training, the model performs well on the data provided. In general, the model is able to identify many well-defined geometric shapes in the images.
+% Briefly summarize methods
+% Overview of results: model generally performs well
+The model was developed using the \mt{pre-trained} convolutional base of VGG16 and a newly trained classifier/head to output predicted probabilities within the defined set of geometric features. After training, the model performs well on the data provided. In general, the model is able to identify many well-defined geometric shapes in the images.
 
-\mt{
-\begin{itemize}
-\item Many model errors are a result of overlapping geometric features between classes. The variability within certain classes exacerbates the difficulty in defining categories, leading to frequent confusion between circle/text and triangle/quad/polygon \svp{This is at least in part due to the features used by practitioners, and partially due to our generalization/operational definition.}
-\item Model predictions also indicate that contrast correction is important, and model should be retrained on cc'd images
-\item Mention cutting off conv block? \svp{Sure, just do it in friendly terms}
-\end{itemize}
-}
+% Discussion of weaknesses
+\fix{Although model predictions are overall quite good, there are a number of \fix{issues}. Firstly, the model has substantial difficulty predicting images with low contrast because image features are obscured; exploring methods of color correction, such as histogram normalization, may prove useful for eliminating the effect of contrast on predictions.
+
+A larger difficulty is the inherent overlap between features of common geometric shapes, and high variability of those shapes on outsoles. Overlapping features between shapes makes it more difficult for the model to distinguish between geometrically similar shapes, such as chevrons and triangles. When the physical shapes present within a category are highly variable, this further widens the sets of features associated with individual categories, leading to even more model confusion. These issues of overlap and variabailty are at least in part due to the features used by practitioners, and partially due to our generalization/operational definition.}
+
+\mt{What is the balance between comprehensive and redundant? I don't think I've found it... I'll try again when not exhausted}
+
+\mt{Final paragraph will suggest redefining shapes (yuck) and cutting off the final conv block to see whether those features are easier for the model to sort between categories.}
 
 %\section{Future Work}
 %\svp{Need to show image contrast stuff to use this paragraph.}
