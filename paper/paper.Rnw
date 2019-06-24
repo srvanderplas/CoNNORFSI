@@ -646,12 +646,12 @@ The goal of this research was to develop a method to automatically identify geom
 % Discussion of weaknesses
 \fix{Although model predictions are} \svp{generally accurate}, there are a number of \svp{systematic misclassifications}. The model has substantial difficulty predicting images with low contrast because image features are obscured. Exploring methods of color correction, such as histogram equalization, may prove useful for eliminating the effect of contrast on predictions.
 
-<<<<<<< HEAD
+% <<<<<<< HEAD
 \svp{Another source of systematic misclassifications stems from the} inherent overlap between features of common geometric shapes, \svp{in combination with} high variability of those shapes on outsoles. Overlapping features between shapes makes it more difficult for the model to distinguish between geometrically similar shapes, such as chevrons and triangles. When the physical shapes present within a category are highly variable, this further widens the sets of features associated with individual categories, leading to even more model confusion. These issues of overlap and variability are at least in part due to \svp{our decision to use} the features used by practitioners \svp{directly}; \svp{some of this may also result from our operational definitions of various shapes, which did not take into account the model's capabilities and initial training}.
 
-=======
-A larger difficulty is the inherent overlap between features of common geometric shapes; since CNNs make predictions via bottom-up feature integration, it is more difficult for the model to distinguish between geometrically similar shapes, such as chevrons and triangles. This issue is exacerbated by high variability of those shapes on outsoles, which requires the model to form a flexible understanding of  each shape category, but makes distinction even more difficult. These issues of overlap and variabailty are at least in part due to the features used by practitioners, and partially due to the operational definitions of each class used in this research. While a \fix{full} remedy may not be possible, there may be some modifications to operational class definitions that we can make to optimize labels for model prediction.}
->>>>>>> 30ea1b70f71998a523620fbe35230f47b7dc61fd
+% =======
+A larger difficulty is the inherent overlap between features of common geometric shapes; since CNNs make predictions via bottom-up feature integration, it is more difficult for the model to distinguish between geometrically similar shapes, such as chevrons and triangles. This issue is exacerbated by high variability of those shapes on outsoles, which requires the model to form a flexible understanding of  each shape category, but makes distinction even more difficult. These issues of overlap and variabailty are at least in part due to the features used by practitioners, and partially due to the operational definitions of each class used in this research. While a \fix{full} remedy may not be possible, there may be some modifications to operational class definitions that we can make to optimize labels for model prediction.
+% >>>>>>> 30ea1b70f71998a523620fbe35230f47b7dc61fd
 
 %\section{Future Work}
 %\svp{Need to show image contrast stuff to use this paragraph.}
