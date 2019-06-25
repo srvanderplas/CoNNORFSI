@@ -108,7 +108,8 @@ pred_prob_plot <- function(img_path, model, classes = default_classes,
   img_preds_df <- img_preds_mat %>%
     as.data.frame() %>%
     set_colnames(default_classes) %>%
-    set_rownames(purrr::map_chr(img_preds, "path") %>% basename() %>% str_remove("\\.jpg")) %>%
+    set_rownames(purrr::map_chr(img_preds, "path") %>% basename() %>%
+                   str_remove("\\.jpg")) %>%
     mutate(path = purrr::map_chr(img_preds, "path"))
 
   img_preds_df <- if (sort) {
@@ -158,7 +159,7 @@ pred_prob_plot <- function(img_path, model, classes = default_classes,
     geom_tile(aes(y = idx, x = as.numeric(factor(class)),
                   fill = value, color = yes,
                   width = w, height = h),
-              data = img_preds_df_long) +
+              data = img_preds_df_long, size = .4) +
     geom_text(aes(x = as.numeric(factor(class)), y = idx,
                   label = sprintf("%0.2f", value)), data = img_preds_df_long,
               hjust = 0.5, vjust = 0.5) +
