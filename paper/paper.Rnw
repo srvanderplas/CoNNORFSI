@@ -77,7 +77,7 @@ source(file.path(codedir, "Generate_Model_Images.R"))
 <<labeled-data-setup, include = F>>=
 model_path <- file.path(modeldir, "TrainedModels")
 
-if(grepl("!School", model_path)) {
+if (grepl("!School", model_path)) {
   newest_model <- get_newest(dir = model_path, pattern = "weights.h5")
 } else {
   newest_model <- list(path = file.path(model_path, "20190514-155453"),
@@ -96,7 +96,9 @@ source(file.path(codedir, "count_images.R"))
 <<load-keras-model, include = F, eval = T, echo = F>>=
 model_dir <- newest_model$path
 load(list.files(model_dir, pattern = "-history.Rdata", full.names = T)[1])
-load(file.path(get_newest()$path, get_newest(pattern = "\\d.Rdata")$base_file))
+load(file.path(newest_model$path,
+               paste0(newest_model$start_date, "_",
+                      newest_model$prefix, ".Rdata")))
 
 model_wts_file <- file.path(newest_model$path, newest_model$base_file)
 loaded_model <- set_weights(model_wts_file)
