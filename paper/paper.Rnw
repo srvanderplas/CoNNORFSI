@@ -72,6 +72,7 @@ modeldir <- file.path(wd, "model")
 imgdir <- file.path(wd, "images")
 
 source(file.path(codedir, "Generate_Model_Images.R"))
+source(file.path(codedir, "equalize.R"))
 @
 
 <<labeled-data-setup, include = F>>=
@@ -439,9 +440,12 @@ After examining model performance, both in specific cases and systematically acr
 \paragraph{Image Contrast}
 As described earlier, the images used for this research were obtained from online retailers before being labeled and cropped. One consequence of using outsole images instead of impressions is the impact of colors in the image. Features from outsoles that are primarily black or white in color are typically not as prominent as features from images with more varied color schemes. As a result, the features in low contrast images are not easily resolved by the filters; this is propogated through both model training and prediction of new images. In other words, the model `learns' that when there are few meaningful features with which to determine which shapes are present, the best strategy for minimizing loss is to predict diffuse probabilities across many classes, as seen in \autoref{fig:low-contrast-consistency}.
 
-<<low-contrast-consistency, fig.cap = "\\mt{Model predictions for images with low contrast. While these images do truly contain a variety of shapes, the diffuse probabilities assigned by the model across all categories indicate that features are obscured by low contrast, which propogates through model training and prediction.}", fig.pos = "p!", out.width = "100%", cache = T>>=
+<<low-contrast-consistency, fig.cap = "Model predictions for images with low contrast. While these images contain a variety of shapes \\svp{(as shown in the color-corrected column on the right)}, the diffuse probabilities assigned by the model across all categories indicate that features are obscured by low contrast, which propogates through model training and prediction.", fig.pos = "p!", out.width = "100%", fig.width = 10/1.2, fig.height = 9/1.2, cache = T>>=
 lowcontrast <- list.files(file.path(wd, "images", "consistency", "low-contrast2"), full.names = T)
-pred_prob_plot(lowcontrast, loaded_model, sort = F, eer = eers)
+
+pred_prob_plot(lowcontrast, loaded_model, sort = F, eer = eers,
+               img_path2 = lowcontrast) +
+  theme(legend.position = "bottom")
 @
 
 \paragraph{Feature Overlap}
