@@ -120,10 +120,7 @@ project funded ....}
 % \fntext[csafe]{195 Durham Center, 613 Morill Rd., Ames, IA 50011}
 
 % or include affiliations in footnotes:
-\author[1]{Miranda Tilton\fnref{isu}}
-\ead{tiltonm@iastate.edu}
-
-\author[1]{Susan Vanderplas\corref{cor1}\fnref{isu}}
+\author[1]{Miranda Tilton and Susan Vanderplas\corref{cor1}\fnref{isu}}
 \cortext[cor1]{Corresponding author}
 \ead{srvander@iastate.edu}
 
