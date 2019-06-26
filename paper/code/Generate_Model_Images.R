@@ -153,7 +153,7 @@ pred_prob_plot <- function(img_path, model, classes = str_to_title(default_class
     ~annotation_custom(grid::rasterGrob(readJPEG(.x), interpolate = T),
                        ymin = .y - .5, ymax = .y + .5,
                        xmin = -0.5, xmax = 0.5))
-  xlims <- -0.5 + c(0,length(classes))
+  xlims <- -0.5 + c(0,length(classes) + 1)
   xlabs <- classes
   xbreaks <- 1:9
 
