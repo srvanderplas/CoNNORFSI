@@ -23,14 +23,16 @@ default_classes <- c(
 # --- Functions ----------------------------------------------------------------
 
 # Get most recent model
-get_newest <- function(dir = file.path(modeldir, "TrainedModels"), pattern = "fullimage.rdata") {
+get_newest <- function(dir = file.path(modeldir, "TrainedModels"),
+                       pattern = "fullimage.rdata") {
   dirlist <- list.dirs(path = dir) %>% rev()
   newest_file <- NULL
   startidx <- 1:pmin(length(dirlist) - 1, 10)
   while (is.null(newest_file) & max(startidx) <= length(dirlist)) {
     newest_file <- dirlist %>%
       magrittr::extract(startidx) %>%
-      sapply(function(x) list.files(x, pattern = pattern, recursive = F, full.names = T)) %>%
+      sapply(function(x) list.files(x, pattern = pattern, recursive = F,
+                                    full.names = T)) %>%
       unlist() %>%
       as.character()
 
@@ -48,7 +50,8 @@ get_newest <- function(dir = file.path(modeldir, "TrainedModels"), pattern = "fu
     str_remove(start_date) %>%
     str_remove("^_")
   process_dir <- basename(path)
-  return(list(path = path, base_file = base_file, prefix = prefix, start_date = start_date, process_dir = process_dir))
+  return(list(path = path, base_file = base_file, prefix = prefix,
+              start_date = start_date, process_dir = process_dir))
 }
 
 set_weights <- function(model_wts_file) {
@@ -78,7 +81,7 @@ set_weights <- function(model_wts_file) {
 
 
 # --- # Model predictions # ----------------------------------------------------
-predict_new <- function(img_path, model, classes = default_classes) {
+predict_new <- function(img_path, model, classes = str_to_title(default_classes)) {
   purrr::map(img_path, function(x) {
     img <- jpeg::readJPEG(x)
     dim(img) <- c(1, dim(img))
@@ -92,9 +95,9 @@ predict_new <- function(img_path, model, classes = default_classes) {
   })
 }
 
-pred_prob_plot <- function(img_path, model, classes = default_classes,
+pred_prob_plot <- function(img_path, model, classes = str_to_title(default_classes),
                            sort = T, eer = NULL) {
-  if(!is.null(eer)) {
+  if (!is.null(eer)) {
     assertthat::assert_that(is.numeric(eer))
     assertthat::assert_that(length(eer) == length(classes))
   }
@@ -107,7 +110,7 @@ pred_prob_plot <- function(img_path, model, classes = default_classes,
   tmp <- hclust(dist(img_preds_mat))
   img_preds_df <- img_preds_mat %>%
     as.data.frame() %>%
-    set_colnames(default_classes) %>%
+    set_colnames(classes) %>%
     set_rownames(purrr::map_chr(img_preds, "path") %>% basename() %>%
                    str_remove("\\.jpg")) %>%
     mutate(path = purrr::map_chr(img_preds, "path"))
@@ -121,7 +124,7 @@ pred_prob_plot <- function(img_path, model, classes = default_classes,
       mutate(idx = row_number())
   }
 
-  if(is.null(eer)) {
+  if (is.null(eer)) {
     eer <- rep(1, length(classes))
   }
 
@@ -140,14 +143,13 @@ pred_prob_plot <- function(img_path, model, classes = default_classes,
                              by = c("class", "idx"))
   img_preds_df_long$yes <- factor(img_preds_df_long$yes, labels = c("No", "Yes"))
 
-  features_xraster <- purrr::map2(img_preds_df$path, img_preds_df$idx,
-                                  ~annotation_custom(grid::rasterGrob(readJPEG(.x), interpolate = T),
-                                                     ymin = .y - .5,
-                                                     ymax = .y + .5,
-                                                     xmin = -0.5,
-                                                     xmax = 0.5))
+  features_xraster <- purrr::map2(
+    img_preds_df$path, img_preds_df$idx,
+    ~annotation_custom(grid::rasterGrob(readJPEG(.x), interpolate = T),
+                       ymin = .y - .5, ymax = .y + .5,
+                       xmin = -0.5, xmax = 0.5))
 
-  if(sum(eer) == length(classes)) {
+  if (sum(eer) == length(classes)) {
     cols <- c("No" = "black", "Yes" = "black")
     w <- h <- 1
   } else {
@@ -169,7 +171,7 @@ pred_prob_plot <- function(img_path, model, classes = default_classes,
     features_xraster +
     coord_fixed() +
     scale_x_continuous(limits = c(-0.5, 9.5), breaks = 1:9,
-                       labels = default_classes, expand = c(0,0)) +
+                       labels = classes, expand = c(0,0)) +
     scale_y_continuous(limits = c(.5, length(img_path) + .5), expand = c(0,0)) +
     theme(axis.text.y = element_blank(), axis.title = element_blank(),
           axis.ticks.y = element_blank())
@@ -185,7 +187,7 @@ pred_prob_plot <- function(img_path, model, classes = default_classes,
 }
 
 # --- # Heatmaps # -------------------------------------------------------------
-calc_heatmap <- function(img_path, model, classes = default_classes, scale_by_prob = F) {
+calc_heatmap <- function(img_path, model, classes = str_to_title(default_classes), scale_by_prob = F) {
   if (length(img_path) > 1) {
     img_path <- img_path[1]
     warning("Using only the first image")
@@ -240,7 +242,8 @@ calc_heatmap <- function(img_path, model, classes = default_classes, scale_by_pr
 
   if (is.null(successful_heatmap)) {
     message("No heatmaps were successful")
-    return(list(img = img, heatmap = NULL, successful_heatmap = NULL, predictions = predictions, truth = true_labels))
+    return(list(img = img, heatmap = NULL, successful_heatmap = NULL,
+                predictions = predictions, truth = true_labels))
   } else {
     return(list(img = img, heatmap = heatmap,
                 successful_heatmap = successful_heatmap,
@@ -249,7 +252,8 @@ calc_heatmap <- function(img_path, model, classes = default_classes, scale_by_pr
   }
 }
 
-heatmap_overlay <- function(heatmap, geometry = geometry, width = 256, height = 256, tdd = tempdir(),
+heatmap_overlay <- function(heatmap, geometry = geometry,
+                            width = 256, height = 256, tdd = tempdir(),
                           bg = "white", col = terrain.colors(12)) {
   overlay_file <- tempfile(tmpdir = tdd, fileext = "png")
   png(overlay_file, width = width, height = height, bg = bg)
@@ -372,7 +376,8 @@ create_composite <- function(heatmap_data, save_file = F, outdir = ".",
 
     } else {
       filelist[j] <- blank_img %>%
-        image_annotate("Failed\nto\ngenerate", color = "black", size = 30, gravity = "Center")
+        image_annotate("Failed\nto\ngenerate", color = "black", size = 30,
+                       gravity = "Center")
     }
   }
 
@@ -390,8 +395,10 @@ create_composite <- function(heatmap_data, save_file = F, outdir = ".",
 
 
   if (save_file) {
-    final_save_file <- file.path(outdir,
-                                 sprintf("heatmap-%s.png", tools::file_path_sans_ext(basename(heatmap_data$img_path))))
+    final_save_file <- file.path(
+      outdir,
+      sprintf("heatmap-%s.png",
+              tools::file_path_sans_ext(basename(heatmap_data$img_path))))
 
     composite_image %>%
       image_write(path = final_save_file, format = "png")
@@ -497,7 +504,8 @@ get_accuracy <- function(x, preds, labels) {
   tpr <- tp/pos
   fpr <- fp/neg
 
-  data.frame(cutoff = x, class = names(tpr), tpr = as.numeric(tpr), fpr = as.numeric(fpr))
+  data.frame(cutoff = x, class = names(tpr), tpr = as.numeric(tpr),
+             fpr = as.numeric(fpr))
 }
 
 get_allclass_accuracy <- function(x, preds, labels) {
@@ -526,11 +534,12 @@ eer <- function(df) {
   df[which.min(abs(fnr - fpr)),]
 }
 
-plot_onehot_roc <- function(preds, labels, classes = default_classes) {
+plot_onehot_roc <- function(preds, labels, classes = str_to_title(default_classes)) {
   cv <- 1:ncol(preds) %>% set_names(classes)
   tmp <- purrr::map(cv, ~pROC::roc(labels[,.], preds[,.]))
 
-  roc_data <- purrr::map_df(tmp, ~data_frame(tpr = .$sensitivities, fpr = 1 - .$specificities,
+  roc_data <- purrr::map_df(tmp, ~data_frame(tpr = .$sensitivities,
+                                             fpr = 1 - .$specificities,
                                              thresholds = .$thresholds,
                                              auc = .$auc[1]), .id = "class") %>%
     nest(tpr, fpr, thresholds, .key =  "roc_plot") %>%
@@ -540,12 +549,16 @@ plot_onehot_roc <- function(preds, labels, classes = default_classes) {
 
   p <- ggplot() +
     geom_line(aes(x = fpr, y = tpr), data = unnest(roc_data, roc_plot)) +
-    geom_text(aes(x = 1, y = 0, label = sprintf("AUC: %0.2f", auc)), hjust = 1, vjust = -0.2, data = roc_data) +
-    geom_point(aes(x = fpr, y = tpr, color = "Equal Error\nRate"), data = unnest(roc_data, eer)) +
+    geom_text(aes(x = 1, y = 0, label = sprintf("AUC: %0.2f", auc)),
+              hjust = 1, vjust = -0.2, data = roc_data) +
+    geom_point(aes(x = fpr, y = tpr, color = "Equal Error\nRate"),
+               data = unnest(roc_data, eer)) +
     scale_color_manual("", values = "black") +
     facet_wrap(~class) +
-    scale_x_continuous("False Positive Rate", breaks = c(0, .25, .5, .75, 1), labels = c("0.0", "", "0.5", "", "1.0")) +
-    scale_y_continuous("True Positive Rate", breaks = c(0, .25, .5, .75, 1), labels = c("0.0", "", "0.5", "", "1.0"))
+    scale_x_continuous("False Positive Rate", breaks = c(0, .25, .5, .75, 1),
+                       labels = c("0.0", "", "0.5", "", "1.0")) +
+    scale_y_continuous("True Positive Rate", breaks = c(0, .25, .5, .75, 1),
+                       labels = c("0.0", "", "0.5", "", "1.0"))
 
   invisible(list(data = roc_data, plot = p))
 }
@@ -627,18 +640,23 @@ plot_deepviz2 <- function(n, edge_col = "grey50", line_type = "solid", rad = .1)
 }
 
 
-plot_deepviz_sample <- function(n, dropout_rate = .5, edge_col = c("grey50", "grey80"),
+plot_deepviz_sample <- function(n, dropout_rate = .5,
+                                edge_col = c("grey50", "grey80"),
                                 line_type = c("solid", "22"), rad = .1){
   nodes <- make_nodes_df(n)
   edges <- make_edges_df(n)
 
-  edges$dropout <- sample(c(0, 1), size = nrow(edges), replace = T, prob = c(dropout_rate, 1 - dropout_rate)) %>% factor(levels = c(0, 1), labels = c("FALSE", "TRUE"))
+  edges$dropout <- sample(c(0, 1), size = nrow(edges), replace = T,
+                          prob = c(dropout_rate, 1 - dropout_rate)) %>%
+    factor(levels = c(0, 1), labels = c("FALSE", "TRUE"))
 
   tbl_graph(nodes = nodes, edges = edges) %>%
     ggraph(layout = "manual", node.position = layout_keras(., n)) +
     geom_edge_diagonal0(aes(edge_colour = dropout, linetype = dropout)) +
-    scale_edge_color_manual("Dropout", values = c("TRUE" = edge_col[2], "FALSE" = edge_col[1])) +
-    scale_edge_linetype_manual("Dropout", values = c("TRUE" = line_type[2], "FALSE" = line_type[1])) +
+    scale_edge_color_manual("Dropout", values = c("TRUE" = edge_col[2],
+                                                  "FALSE" = edge_col[1])) +
+    scale_edge_linetype_manual("Dropout", values = c("TRUE" = line_type[2],
+                                                     "FALSE" = line_type[1])) +
     geom_node_circle(aes(r = rad), fill = "grey40") +
     coord_fixed() +
     theme_void()
