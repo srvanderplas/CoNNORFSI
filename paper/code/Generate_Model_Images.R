@@ -96,7 +96,7 @@ predict_new <- function(img_path, model, classes = str_to_title(default_classes)
 }
 
 pred_prob_plot <- function(img_path, model, classes = str_to_title(default_classes),
-                           sort = T, eer = NULL) {
+                           sort = T, eer = NULL, img_path2 = NULL) {
   if (!is.null(eer)) {
     assertthat::assert_that(is.numeric(eer))
     assertthat::assert_that(length(eer) == length(classes))
@@ -114,6 +114,11 @@ pred_prob_plot <- function(img_path, model, classes = str_to_title(default_class
     set_rownames(purrr::map_chr(img_preds, "path") %>% basename() %>%
                    str_remove("\\.jpg")) %>%
     mutate(path = purrr::map_chr(img_preds, "path"))
+
+  if (!is.null(img_path2)) {
+    assertthat::assert_that(length(img_path) == length(img_path2))
+    img_preds_df$path2 <- img_path2
+  }
 
   img_preds_df <- if (sort) {
     img_preds_df %>%
@@ -148,6 +153,23 @@ pred_prob_plot <- function(img_path, model, classes = str_to_title(default_class
     ~annotation_custom(grid::rasterGrob(readJPEG(.x), interpolate = T),
                        ymin = .y - .5, ymax = .y + .5,
                        xmin = -0.5, xmax = 0.5))
+  xlims <- -0.5 + c(0,length(classes))
+  xlabs <- classes
+  xbreaks <- 1:9
+
+  if (!is.null(img_path2)) {
+    features_xraster2 <- purrr::map2(
+      img_preds_df$path2, img_preds_df$idx,
+      ~annotation_custom(grid::rasterGrob(as.array(im_equalize(readJPEG(.x)),
+                                                   dim = c(256, 256, 3)),
+                                          interpolate = T),
+                         ymin = .y - .5, ymax = .y + .5,
+                         xmin = length(classes) + .5, xmax = length(classes) + 1.5))
+    xlims <- -0.5 + c(0,length(classes) + 2)
+    xlabs <- c("Original\nImage", xlabs, "Contrast\nCorrected\nImage")
+    xbreaks <- 0:(length(classes) + 1)
+    features_xraster <- list(features_xraster, features_xraster2)
+  }
 
   if (sum(eer) == length(classes)) {
     cols <- c("No" = "black", "Yes" = "black")
@@ -170,13 +192,13 @@ pred_prob_plot <- function(img_path, model, classes = str_to_title(default_class
     scale_color_manual(values = cols, guide = "none") +
     features_xraster +
     coord_fixed() +
-    scale_x_continuous(limits = c(-0.5, 9.5), breaks = 1:9,
-                       labels = classes, expand = c(0,0)) +
+    scale_x_continuous(limits = xlims, breaks = xbreaks,
+                       labels = xlabs, expand = c(0,0)) +
     scale_y_continuous(limits = c(.5, length(img_path) + .5), expand = c(0,0)) +
     theme(axis.text.y = element_blank(), axis.title = element_blank(),
           axis.ticks.y = element_blank())
 
-  if(sum(eer) == length(classes)) {
+  if (sum(eer) == length(classes)) {
     l <- geom_blank()
   } else {
     l <- guides(color = guide_legend(title = "Above EER", order = 2,
