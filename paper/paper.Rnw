@@ -112,7 +112,7 @@ loaded_model <- set_weights(model_wts_file)
 \begin{frontmatter}
 
 \title{A Convolutional Neural Network for Outsole Recognition\tnoteref{t1}}
-\tnotetext[t1]{This work was partially funded by the Center for Statistics and Applications in Forensic Evidence (CSAFE) through Cooperative Agreement #70NANB15H176 between NIST and Iowa State University, which includes activities carried out at Carnegie Mellon University, University of California Irvine, and University of Virginia.}
+\tnotetext[t1]{This work was partially funded by the Center for Statistics and Applications in Forensic Evidence (CSAFE) through Cooperative Agreement \#70NANB15H176 between NIST and Iowa State University, which includes activities carried out at Carnegie Mellon University, University of California Irvine, and University of Virginia.}
 
 %% Group authors per affiliation:
 % \author{Miranda Tilton and Susan Vanderplas\fnref{csafe}}
