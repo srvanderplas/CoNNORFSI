@@ -1,4 +1,4 @@
-\documentclass[review]{elsarticle}
+\documentclass[doubleblind,review]{elsarticle}
 
 \usepackage{lineno,hyperref}
 \modulolinenumbers[5]
@@ -115,9 +115,8 @@ loaded_model <- set_weights(model_wts_file)
 \tnotetext[t1]{This work was partially funded by the Center for Statistics and Applications in Forensic Evidence (CSAFE) through Cooperative Agreement \#70NANB15H176 between NIST and Iowa State University, which includes activities carried out at Carnegie Mellon University, University of California Irvine, and University of Virginia.}
 
 %% Group authors per affiliation:
-\author{Miranda Tilton and Susan Vanderplas\fnref{csafe}}
-\address{Center for Statistical Applications in Forensic Evidence, Iowa State University}
-\fntext[csafe]{195 Durham Center, 613 Morill Rd., Ames, IA 50011.}
+\author{Miranda Tilton and Susan Vanderplas}
+\address{Center for Statistical Applications in Forensic Evidence, Iowa State University. 195 Durham Center, 613 Morill Rd., Ames, IA 50011}
 
 % or include affiliations in footnotes:
 % \author[1]{Miranda Tilton and Susan Vanderplas\corref{cor1}\fnref{isu}}
