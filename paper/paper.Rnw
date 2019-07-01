@@ -118,20 +118,21 @@ loaded_model <- set_weights(model_wts_file)
 \author{Miranda Tilton and Susan Vanderplas}
 \address{Center for Statistical Applications in Forensic Evidence, Iowa State University. 195 Durham Center, 613 Morill Rd., Ames, IA 50011}
 
+
 % or include affiliations in footnotes:
 % \author[1]{Miranda Tilton and Susan Vanderplas\corref{cor1}\fnref{isu}}
 % \cortext[cor1]{Corresponding author}
 % \ead{srvander@iastate.edu}
 %
 % \address[1]{195 Durham Center, 613 Morill Rd, Ames, IA 50011}
-% \fntext[isu]{Center for Statistical Applications in Forensic Evidence, Iowa State University}
+% \fntext[isu]{Center for Statistics and Applications in Forensic Evidence, Iowa State University}
 
 \begin{abstract}
 Currently, to assess similarity in forensic shoeprint analysis, examiners must manually identify and label features in images of shoe prints or outsoles. In this paper, we discuss an algorithm for automatically labeling shoe outsole images using the same feature space examiners use: a set of features based on geometric shapes such as circles, stars, and quadrilaterals. The automatic labeling algorithm performs well on images with unambiguous shapes and moderate color contrast, though some systematic errors arise from the physical similarities of geometric shapes. Additional improvements may be realized by modifying the labeling scheme to reduce feature overlap and by preprocessing the images to improve contrast. This new approach represents a significant improvement to the current manual classification of footwear tread patterns, and could be integrated into current matching databases to reduce the amount of time examiners spend on data entry.
 \end{abstract}
 
 \begin{keyword}
-footwear, class characteristics, computer vision, neural networks
+Footwear; class characteristics; computer vision; neural networks
 \end{keyword}
 
 \end{frontmatter}
