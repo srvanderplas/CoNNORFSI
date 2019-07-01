@@ -116,7 +116,7 @@ loaded_model <- set_weights(model_wts_file)
 
 %% Group authors per affiliation:
 \author{Miranda Tilton and Susan Vanderplas}
-\address{Center for Statistical Applications in Forensic Evidence, Iowa State University. 195 Durham Center, 613 Morill Rd., Ames, IA 50011}
+\address{Center for Statistics and Applications in Forensic Evidence, Iowa State University. 195 Durham Center, 613 Morill Rd., Ames, IA 50011}
 
 
 % or include affiliations in footnotes:
