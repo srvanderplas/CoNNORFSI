@@ -1,4 +1,4 @@
-\documentclass[doubleblind,sort\&compress,review]{elsarticle}
+\documentclass[doubleblind,review]{elsarticle}
 
 \usepackage{lineno,hyperref}
 \modulolinenumbers[5]
