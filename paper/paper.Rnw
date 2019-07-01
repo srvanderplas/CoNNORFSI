@@ -132,7 +132,7 @@ Currently, to assess similarity in forensic shoeprint analysis, examiners must m
 \end{abstract}
 
 \begin{keyword}
-footwear, class characteristics, computer vision, neural networks
+Footwear; class characteristics; computer vision; neural networks
 \end{keyword}
 
 \end{frontmatter}
