@@ -142,20 +142,6 @@ Footwear; class characteristics; computer vision; neural networks
 
 \section{Introduction}
 
-\mt{General paper to-do:}
-\mt{1. Find a paper to cite the 95\% statistic}
-\mt{Option: Shoe marks are most common at a crime scene (Rida et al., 2019)}
-\mt{2. A zotero reference is missing details, remember to go find/fix it}
-\mt{3. Cite papers with manual data collection}
-\mt{3.5. Incorporate recommended citations from reviewer 3}
-\mt{4. Susan will send pictures of the prototype scanner from the grant proposal}
-\mt{5. Argue in methods that we know real image quality will be lower but we needed to start somewhere}
-\mt{6. Our goal is to narrow down what type of model works and assess the model(s) limitations}
-\mt{7. Add to conclusion: Overall, this concept seems to work, but we need to modify the classificiation scheme. Thus, this work is publishable, because it needs work and community input. Need more research into human comphrehensible and yet useful classification schemes for this purpose. We need better class scheme, important and promising, getting this right matters}
-\mt{8. Update abstract to reflect new framing of paper}
-\mt{}
-
-
 In the United States, forensic analysis of shoe print evidence in criminal cases is varied and difficult. The process of collecting print evidence from a crime scene is not standardized, and it is often impossible to conduct an individualizing analysis when a print is partial or of low quality. In fact, some experts estimate that 95\% of cases in the United States do not consider individualizing characteristics of shoeprint evidence \fix{(cite)}. \mt{(see list above)}
 %\footnote{Leslie Hammer, presentation to CSAFE on March 5, 2018}).
 Even so, in these cases it still may be \mt{both possible and useful} to assess the random match probability of the footwear evidence \mt{at the level of class characteristics}. In other words, given a questioned shoe print, what is the probability that a randomly selected shoe in the relevant population has a similar tread pattern? Note that this question is distinct from make and model determination since many shoes of different makes and models can still have similar tread patterns (e.g., knockoffs, similar models over different years, etc).
