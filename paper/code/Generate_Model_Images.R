@@ -560,7 +560,7 @@ plot_onehot_roc <- function(preds, labels, classes = str_to_title(default_classe
   cv <- 1:ncol(preds) %>% set_names(classes)
   tmp <- purrr::map(cv, ~pROC::roc(labels[,.], preds[,.]))
 
-  roc_data <- purrr::map_df(tmp, ~data_frame(tpr = .$sensitivities,
+  roc_data <- purrr::map_df(tmp, ~tibble(tpr = .$sensitivities,
                                              fpr = 1 - .$specificities,
                                              thresholds = .$thresholds,
                                              auc = .$auc[1]), .id = "class") %>%

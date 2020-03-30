@@ -50,9 +50,11 @@
 <<setup, include = F>>=
 knitr::opts_chunk$set(echo = F, dev = "pdf", dpi = 1000, message = F, warning = F, fig.align = "center", fig.path = "figure/")
 
-library(tidyverse)
 library(magrittr)
 library(tidyverse)
+library(tidyr)
+nest <- nest_legacy
+unnest <- unnest_legacy
 library(ggplot2)
 library(keras)
 
@@ -151,6 +153,10 @@ However, studies by \fix{authors (yr)} and \fix{authors (yr)} demonstrate that e
 
 Although footwear impressions are more commonly used in practice for footwear analysis than outsole images, early prototypes of a footwear scanner have suggested that cameras are more robust than pressure scanners for placement in public locations that may experience inclement weather or other non-controlled conditions. Thus, \fix{we move forward by considering how to assess similarity of tread patterns in images, in particular.} More specifically, this assessment is done by identifying a set of relevant features and using image analysis methods to detect the presence or absence of the features in each image, and then defining similarity measures based on those features to determine how many shoes have a tread pattern similar to the pattern of interest.
 
+\fix{We are working to dev a scanner using photo technology. It takes pics like Zappos. While images are degraded in some ways, the fundamental reqs are sim. We want to dev the methodology for this before we get actual data.}
+
+\fix{manual collection citations: presentation by Sandy Parent, benedict et al, benedict cites another, the one that says college students and criminals are basically the same}
+
 % From original intro:
 Several attempts have been made to automatically identify features in both prints and shoe tread images, with low-level image analysis methods including fractal decomposition \citep{alexanderAutomaticClassificationRecognition1999}, scale-invariant feature recognition \citep{pavlouAutomaticExtractionClassification2006}, Fourier-Mellin transformation \citep{guehamAutomaticRecognitionShoeprints2008}, and other classical image analysis methods. Some of these low-level methods perform relatively well in good conditions \citep{luostarinenMeasuringAccuracyAutomatic2014a} but have degraded performance under conditions which are suboptimal, including those commonly found at crime scenes.
 
@@ -160,6 +166,8 @@ In the wider field of computer vision, attention has turned to more robust metho
 % From original intro:
 In this paper, we discuss an alternate approach that uses an additional model layer to transfer the feature vector output into a vector of probabilities representing the detection of geometric elements in shoe tread images. Working within the feature space used by forensic examiners allows us to augment human-identified features with model output, assessing similarity of different shoe images on a feature set that is explicitly relevant to the domain. \fix{Ultimately, we can use the output probabilities to quantify similarity between tread patterns for the ultimate goal of calculating random match probability for a given tread pattern.}
 
+
+\mt{subsection: motivation (w/ pics of scanner)}
 
 % ORIGINAL INTRO:
 
@@ -271,7 +279,7 @@ Triangle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/cl
 
 Thousands of outsole images were obtained from online shoe retail sites and annotated using LabelMe, a tool for image annotation in computer vision problems \citep{labelme}. After annotation, the minimum bounding rectangle of the region is identified and the image is cropped to that area; subsequently, the cropped image is scaled to 256 x 256 pixels. During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
 
-\fix{Rough idea: A reasonable criticism of this approach is that images from online retailers are of much higher quality than would be expected from the sidewalk scanner proposed earlier in this paper. This critique is especially fair considering that CNNs, and neural networks in general, have been shown to perform poorly on test data when it does not resemble the training data (find citation). However, this research is so new that we need to start somewhere. Once this work shows that CNNs can sufficiently distinguish outsole patterns/features, we can justify the effort to modify this approach for real/degraded images.}
+\fix{Rough idea: A reasonable criticism of this approach is that images from online retailers are of much higher quality than would be expected from the sidewalk scanner proposed earlier in this paper. This critique is especially fair considering that CNNs, and neural networks in general, have been shown to perform poorly on test data when it does not resemble the training data (find citation). However, this research is so new that we need to start somewhere. We need to work the kinks out of recognizing characteristics that examiners use. We can do that on real data once the scanner has been built and once we know how well our classification works. AKA find the pitfalls for clean images rather than introduce too many points of failure at once. Once this work shows that CNNs can sufficiently distinguish outsole patterns/features, we can justify the effort to modify this approach for real/degraded images.}
 
 \begin{figure}[hbt]
 \centering
@@ -522,7 +530,7 @@ df_shoes <- df_images %>%
 df_shoes_long <- df_shoes %>%
   tidyr::gather(key = feature, value = value, -str, -brand) %>%
   ungroup() %>%
-  tidyr::nest(c(str, value)) %>%
+  tidyr::nest_legacy(c(str, value)) %>%
   mutate(n_true = purrr::map_int(data, ~sum(.$value)),
          n_shoes_brand = purrr::map_int(data, ~length(.$value)))
 
