@@ -10,38 +10,10 @@
 \usepackage{fullpage}
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb}
+
 \usepackage{natbib}
-%%%%%%%%%%%%%%%%%%%%%%%
-%% Elsevier bibliography styles
-%%%%%%%%%%%%%%%%%%%%%%%
-%% To change the style, put a % in front of the second line of the current style and
-%% remove the % from the second line of the style you would like to use.
-%%%%%%%%%%%%%%%%%%%%%%%
-
-%% Numbered
-%\bibliographystyle{model1-num-names}
-
-%% Numbered without titles
-%\bibliographystyle{model1a-num-names}
-
-%% Harvard
-%\bibliographystyle{model2-names.bst}\biboptions{authoryear}
-
-%% Vancouver numbered
-%\usepackage{numcompress}\bibliographystyle{model3-num-names}
-
-%% Vancouver name/year
-%\usepackage{numcompress}\bibliographystyle{model4-names}\biboptions{authoryear}
-
-%% APA style
-%\bibliographystyle{model5-names}\biboptions{authoryear}
-
-%% AMA style
-%\usepackage{numcompress}\bibliographystyle{model6-num-names}
-
-%% `Elsevier LaTeX' style
-% \bibliographystyle{elsarticle-num}
 \bibliographystyle{plain}
+
 %%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Commenting %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -147,7 +119,7 @@ In this paper, we discuss a computational method which complements a passive, un
 \svp{As a result, }
 % \mt{The process of collecting print evidence from a crime scene is not standardized, and it is often impossible to conduct an individualizing analysis (i.e., one based on randomly acquired characteristics) when a print is partial or of low quality. In fact,
 the majority of footwear examinations in the United States reach conclusions regarding the correspondence of class characteristics rather than of individualizing characteristics \citep{smith_2011}.
-\svp{This tendency is also reflected in the SWGTREAD range of conclusions scale, which has two separate categories to indicate degrees of class characteristic based association out of a range of 7 conclusions.}
+\svp{This tendency is also reflected in the SWGTREAD range of conclusions scale, which has two separate categories to indicate degrees of class characteristic based association out of a range of 7 conclusions.}\fix{add citation}
 \svp{Currently, the guidelines also caution against any statistical assessment because accurate data and models to support statistical calculations do not exist.}
 \svp{If it were possible to collect a sufficiently large quantity of footwear impression data from a local population, it would be helpful to be able to calculate the frequency of shoes with similar class characteristics in the population in order to characterize the determinative value of a particular piece of evidence.}
 % In the cases where individualizing characteristics are not used, it may be both possible and useful to assess the random match probability of the footwear evidence at the level of class characteristics; in other words, given a questioned shoe print, what is the probability that a randomly selected shoe in the relevant population has a similar tread pattern?
@@ -155,12 +127,11 @@ Note that this question is distinct from make and model determination since many
 
 % \mt{From a statistical perspective,
 \svp{Statistically, } the \svp{coincidental (or random)} match probability is estimated by sampling a large number of shoes from a given population and calculating the observed proportion of shoes in the sample whose tread patterns are similar to the given print.
+The primary obstacle to coincidental match probability calculation, then, is one of data collection and annotation.
+\svp{The (limited)} number of \svp{population class-characteristic} studies \citep{parent_sandy_significance_nodate,benedict_geographical_2014} \svp{demonstrate the effort required to collect, process, and analyze } even a \svp{moderate amount of data manually}. \svp{However, technological innovations over the past decade have automated previously manual tasks such as license plate reading, tracking individuals on video feeds, and other complex tasks.}
+\svp{In these comparable situations, two separate but related technological innovations were required: inexpensive and automatic data collection (e.g. via CCTV or video cameras) hardware, and automatic, accurate data processing software.}
+\svp{We are in the process of developing a low-profile scanner which, when embedded in a pedestrian area, passively collects images of shoe treads (a prototype is shown in \autoref{fig:prototype-scanner}).} \svp{In parallel, however, it is necessary to develop software which can process the data from a similarly oriented scanner to generate features which are used to make class characteristic comparisons.} \svp{Through the combination of hardware and software, we hope to enable the collection of population-level footwear data which will facilitate quantitative assessment of class characteristic frequency to support examiner evaluation.}
 
-% In practice, one potential method of sampling could be a low-profile scanner placed in a high traffic area. Such a scanner could take impressions or pictures of shoes walking past, and those scans could then be used to create a database of shoes relevant to the local area.
-
-\mt{A number of footwear studies (such as those by \citep{parent_sandy_significance_nodate} and \citep{benedict_geographical_2014}) have demonstrated that even a couple hundred shoe prints constitute an unweildy amount of data, which then require a large amount of time and effort to process and analyze. Thus, in parallel with the development of the aforementioned scanner, it is necessary to develop a way to process large amounts of data automatically. The primary focus of this paper is the development of one such method for large-scale automatic data processing.}
-
-\mt{Although footwear impressions are more commonly used in practice for footwear analysis than outsole images, our early prototypes of a footwear scanner have suggested that cameras are more robust than pressure scanners for placement in public locations, which may experience inclement weather or other non-controlled conditions. Thus, we are working to develop a scanner that uses cameras to take pictures of shoe outsoles, much like images that are currently found on the websites of online shoe retailers \autoref{fig:prototype-scanner}. Despite the fact that images from the scanner would be more degraded in some ways than images found from online retailers, the fundamental requirements to analyze such data would be similar, so retailer images provide a reasonable basis for the development of a method to assess similarity in tread images. More specifically, this assessment is done by identifying a set of relevant features and using image analysis methods to detect the presence or absence of the features in each image, and then defining similarity measures based on those features to determine how many shoes have a tread pattern similar to the pattern of interest.}
 
 \begin{figure}
 \centering
@@ -183,7 +154,8 @@ Several attempts have been made to automatically identify features in both print
 In the wider field of computer vision, attention has turned to more robust methods for image recognition, such as convolutional neural networks (CNNs), which are capable of achieving near-human accuracy under even degraded image conditions \citep{krizhevskyImageNetClassificationDeep2012}. These networks are designed to mimic the process of human vision, and typically involve application of sets of filters, some of which mimic the filters used in the low-level techniques used in early automatic classification attempts. CNNs have been applied in footwear forensics, making use of more general neural networks optimized to detect objects found in natural scenes, such as trees, animals, buildings, and cars; the pre-trained network's features are then used to compare shoes or prints to determine how well they match \citep{kongCrossDomainImageMatching2019a,kongCrossDomainForensicShoeprint2017,zhangAdaptingConvolutionalNeural2017}. Neural network methods appear to be more successful than traditional image analysis techniques, but the features used for matching are not generally informative for humans, who typically classify shoes by patterns and spatial relationships \citep{davisIntelligenceApproachFootwear1981,grossVariabilitySignificanceClass2013}.
 
 % From original intro:
-In this paper, we discuss an alternate approach that uses an additional model layer to transfer the feature vector output into a vector of probabilities representing the detection of geometric elements in shoe tread images. Working within the feature space used by forensic examiners allows us to augment human-identified features with model output, assessing similarity of different shoe images on a feature set that is explicitly relevant to the domain. \mt{These output probabilities can later be used to quantify similarity between tread patterns for the ultimate goal of calculating random match probability for a given tread pattern.}
+
+Although footwear impressions are more commonly used in practice for footwear analysis than outsole images, our early prototypes of a footwear scanner \svp{suggest} that cameras are more robust than \svp{impression-based systems (e.g.  EverOS) for use in outdoor settings.} \svp{As a result, in this paper describing an initial automated software system for class characteristic recognition, we use outsole images (such as those found on online retail sites), rather than impression-based training data.} \svp{While we recognize that images from the scanner are likely to show some degradation compared to} images found from online retailers, the fundamental features of the \svp{underlying machine learning models are similar.} \svp{In this paper, we present a proof-of-concept model designed to identify class characteristics probabilistically, using labels similar to those used by examiners.} \svp{We discuss the strengths and limitations of both the classification scheme and the neural-network based model, with important implications for future attempts to develop automatic high-level class characteristic recognition systems.}
 
 
 \section{Materials and Methods}
@@ -287,7 +259,7 @@ Triangle & \raisebox{-.5\height}{\includegraphics[width=0.3\textwidth]{images/cl
 
 Thousands of outsole images were obtained from online shoe retail sites and annotated using LabelMe, a tool for image annotation in computer vision problems \citep{labelme}. After annotation, the minimum bounding rectangle of the region is identified and the image is cropped to that area; subsequently, the cropped image is scaled to 256 x 256 pixels. During this process, aspect ratio is not preserved, though efforts are made to label regions which are relatively square to minimize the effect of this distortion. To date, \Sexpr{unique(ann_df$base_image) %>% length()} shoes have been labeled, yielding \Sexpr{nrow(dfunion)} multi-label images.
 
-\mt{A reasonable critique of this approach is that images collected from online retailers are of much higher quality than would be expected from the sidewalk scanner proposed in \autoref{sec:Introduction}, and thus the CNN described in this paper is not immediately ready to process real degraded images. This concern is especially fair when considering that machine learning methods tend to perform poorly when applied to test data that do not resemble the training data. However, the proposed automation methods for this approach are quite novel within the domain of footwear examination, and a fully functioning scanner does not yet exist to collect large amounts of degraded images. Thus, the goal of this work is to evaluate the proposed classification scheme and determine whether CNNs can sufficiently distinguish features found on outsoles. Addressing these questions with clean retailer images provides both justification for further developing the scanner and guidance for modifying the model to process real degraded images.}
+A reasonable critique of this approach is that images collected from online retailers are of much higher quality than would be expected from the sidewalk scanner proposed in \autoref{sec:Introduction}, and thus the CNN described in this paper is not immediately ready to process real degraded images. \svp{This consideration is justified, as} machine learning methods tend to perform poorly when applied to test data that do not resemble the training data. However, the \svp{use of CNNs to predict class characteristics using the same categories used by human examiners is novel and introduces some interesting complications.} \svp{As a full-featured automatic scanner is still under development, obtaining representative degraded images is not possible (because the scanner's optics are still in flux).} The goal of this work is to evaluate the proposed classification scheme and determine whether CNNs can sufficiently distinguish class characteristic features found on outsoles. Addressing these questions with clean retailer images provides \svp{justification for additional algorithm development as well as continuing investment in optimization of the scanner design}
 
 
 \begin{figure}[hbt]
@@ -572,7 +544,7 @@ ggplot(data = brand_prop_by_feature_10) +
   ggtitle("Proportion of Labeled Features by Brand")
 @
 
-We have proposed several hypotheses \mt{to explain the inconsistencies between the manual labels and the model's predictions on the images.} We can test these hypotheses by examining what the model ``sees" when making its predictions. Heatmaps, also known as Class Activation Maps (CAMs), are a visual diagnostic tool that highlights the areas of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions.
+We have proposed several hypotheses to explain the inconsistencies between the manual labels and the model's predictions on the images. We can test these hypotheses by examining what the model ``sees" when making its predictions. Heatmaps, also known as Class Activation Maps (CAMs), are a visual diagnostic tool that highlights the areas of an image that are most significant to classification for a given class \citep{chollet_allaire_2018}. Using these graphics, we can identify which locations in an image contribute most to the model's predictions.
 
 Figures \ref{fig:ugg-heatmap}-\ref{fig:dc-heatmap} show a number of images alongside heatmaps for the four classes with the highest output probabilities for each image. \autoref{fig:ugg-heatmap} shows predictions and heatmaps for the logo from an UGG shoe. The model correctly identifies triangles and text, and references appropriate regions of the image. The prediction of a circle is shown to be associated with the letter ``G"; although this prediction is technically incorrect, it indicates that the model has learned to associate curved shapes with circles. This association is again seen in the high predicted probability of circle in \autoref{fig:seychelles-heatmap}. In this case, the prediction of text is again correct,, but the prediction of circle is not---there are very round shapes, but they do not form a closed figure that could be identified as a circle. \autoref{fig:dc-heatmap} shows a DC shoe with repeating instances of a shape that is a combination of a circle and quadrilateral, but does not technically fall into either of those categories by our definition. The model assigns high probabilities of circle and quadrilateral and indicates that the proper image features are being used for this classification. Additionally, the prediction of polygon is incorrect but reasonable considering that many small hexagons are indistinguishable from circles. These heatmaps can confirm that a number of misclassifications are a result of overlapping features between classes, and that the model is using reasonable features to make predictions.
 
@@ -669,12 +641,10 @@ knitr::include_graphics(heatmaps[grepl("other", heatmaps)])
 \section{Conclusions}
 % Restate goal and briefly summarize methods
 
-\mt{The goal of this research was to develop a method to automatically identify geometric class characteristics of shoe outsoles. This goal is motivated by the desire to compute the random match probability of specific tread patterns, which could be achieved by applying this automatic image processing method to outsole images collected from a footwear scanner in a local population.}
-
-A set of geometric class characteristics was defined, based on feature sets currently used by examiners, to both broadly classify a large variety of shoes and to narrow down similarity into a manageable number and type of features for further use in a shoeprint analysis. Thousands of outsole images were obtained from online shoe retailers and labeled according to their geometric shapes. The pre-trained convolutional base of VGG16 was then used, with a new classifier trained on a portion of these labeled images, to output predicted probabilities for test images within the defined set of geometric features. After training, the model performs well on the data provided. In general, the model is able to identify many well-defined geometric shapes in the images.
+\svp{In this paper, we have presented} a method \svp{for automatic identification of} geometric class characteristics  \svp{in outsole tread patterns}. A set of geometric class characteristics, defined based on feature sets currently used by examiners, were used to classify a large variety of tread patterns. Labeling these images provided the opportunity to select a manageable number of features and define criteria for labeling these features on newly collected footwear images. Using the convolutional base of VGG16, a pre-trained neural network, we created a new classifier optimized to work with outsole images. This classifier returns the probability of each geometric feature for new outsole images.
 
 % Discussion of weaknesses
-Although model predictions are generally accurate, there are a number of systematic misclassifications. The model has substantial difficulty predicting images with low contrast because image features are obscured. Exploring methods of color correction, such as histogram equalization, may prove useful for eliminating the effect of contrast on predictions. Initial implementations of histogram equalization suggest that the overall accuracy improvement is modest; the model fit to images which have been equalized had approximately 92.5\% validation accuracy, an improvement of 1.5\% over the default model described in this paper.
+Although model predictions are generally accurate, there are a number of systematic misclassifications \svp{and weaknesses} which can be addressed in future iterations of the modeling process. The model has substantial difficulty predicting images with low contrast because image features are obscured. Exploring methods of color correction, such as histogram equalization, may prove useful for eliminating the effect of contrast on predictions. Initial implementations of histogram equalization suggest that the overall accuracy improvement is modest; the model fit to images which have been equalized had approximately 92.5\% validation accuracy, an improvement of 1.5\% over the default model described in this paper.
 
 Another source of systematic misclassifications stems from the inherent overlap between features of common geometric shapes. CNNs make predictions via bottom-up feature integration; as a result, it is more difficult for the model to distinguish between geometrically similar shapes, such as chevrons and triangles. This issue is exacerbated by high variability of some shapes commonly found in outsole patterns, which requires the model to form a flexible understanding of each shape category and makes distinction between similar shapes even more difficult. These issues of overlap and variability are at least in part due to our decision to use the features used by practitioners directly; some of this may also result from our operational definitions of various shapes, which were created before we had a complete understanding of the practical limitations of CNNs. While a complete remedy may not be possible, there may be some modifications to operational class definitions that we can make to optimize labels for model prediction. In addition, we will continue to improve the labeling of shapes in our database with the goal of expanding the breadth and quantity of labeled images available for model training.
 
