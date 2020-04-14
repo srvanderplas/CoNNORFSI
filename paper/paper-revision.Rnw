@@ -1,13 +1,16 @@
-\documentclass[doubleblind,review]{elsarticle}
+\documentclass{article}
 
 \usepackage{lineno,hyperref}
 \modulolinenumbers[5]
 
-% Allow strikethrough text
-\usepackage[normalem]{ulem}
 
-\journal{Forensic Science International}
-
+\usepackage[normalem]{ulem} % Allow strikethrough text
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{natbib}
 %%%%%%%%%%%%%%%%%%%%%%%
 %% Elsevier bibliography styles
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -37,11 +40,12 @@
 %\usepackage{numcompress}\bibliographystyle{model6-num-names}
 
 %% `Elsevier LaTeX' style
-\bibliographystyle{elsarticle-num}
+% \bibliographystyle{elsarticle-num}
+\bibliographystyle{plain}
 %%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Commenting %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage[table]{xcolor}
+% \usepackage[table,dvipsnames]{xcolor}
 \newcommand{\mt}[1]{{\color{magenta} #1}}
 \newcommand{\svp}[1]{{\color{teal} #1}}
 \newcommand{\fix}[1]{{\color{orange} #1}}
@@ -49,6 +53,9 @@
 
 <<setup, include = F>>=
 knitr::opts_chunk$set(echo = F, dev = "pdf", dpi = 1000, message = F, warning = F, fig.align = "center", fig.path = "figure/")
+options(kableExtra.latex.load_packages = FALSE)
+library(kableExtra)
+knit_hooks$set(document = function(x) {sub('\\usepackage[]{color}', '\\usepackage[table]{xcolor}', x, fixed = TRUE)})
 
 library(magrittr)
 library(tidyverse)
@@ -109,37 +116,26 @@ model_wts_file <- file.path(newest_model$path, newest_model$base_file)
 loaded_model <- set_weights(model_wts_file)
 @
 
-\begin{document}
 
-\begin{frontmatter}
-
-\title{A Convolutional Neural Network for Outsole Recognition\tnoteref{t1}}
-\tnotetext[t1]{This work was partially funded by the Center for Statistics and Applications in Forensic Evidence (CSAFE) through Cooperative Agreement \#70NANB15H176 between NIST and Iowa State University, which includes activities carried out at Carnegie Mellon University, University of California Irvine, and University of Virginia.}
+\title{A Convolutional Neural Network for Outsole Recognition\footnote{This work was partially funded by the Center for Statistics and Applications in Forensic Evidence (CSAFE) through Cooperative Agreement \#70NANB15H176 between NIST and Iowa State University, which includes activities carried out at Carnegie Mellon University, University of California Irvine, and University of Virginia.}}
 
 %% Group authors per affiliation:
 \author{Miranda Tilton and Susan Vanderplas}
-\address{Center for Statistics and Applications in Forensic Evidence, Iowa State University. 195 Durham Center, 613 Morill Rd., Ames, IA 50011}
+% \address{Center for Statistics and Applications in Forensic Evidence, Iowa State University. 195 Durham Center, 613 Morill Rd., Ames, IA 50011}
 
-
-% or include affiliations in footnotes:
-% \author[1]{Miranda Tilton and Susan Vanderplas\corref{cor1}\fnref{isu}}
-% \cortext[cor1]{Corresponding author}
-% \ead{srvander@iastate.edu}
-%
-% \address[1]{195 Durham Center, 613 Morill Rd, Ames, IA 50011}
-% \fntext[isu]{Center for Statistics and Applications in Forensic Evidence, Iowa State University}
-
+\begin{document}
+\maketitle
 \begin{abstract}
 \svp{Quantitative assessment of class characteristic frequency is a difficult problem, in part because there is currently no way to collect and efficiently process and categorize the quantity of data which would be required for such assessments.
 The human labor required to both collect and systematically classify images collected from the population in sufficient quantity to make such assessments has been prohibitive. % I'm not thrilled with this bit, but I do think we need to drive the point home a bit harder as to why we have to automate both parts of this process
 In this paper, we discuss a computational method which complements a passive, unmanned scanning device that is currently under development. The automatic class characteristic recognition algorithm described in this paper has been developed with photographs of outsole images, and identifies high-level features} such as circles, stars, and quadrilaterals. \svp{These features are designed to mimic high-level features used by examiners, to facilitate automatic processing of features without resorting to black-box feature sets commonly used in neural networks. The algorithm}  performs well on images with unambiguous shapes and moderate color contrast, though some systematic errors arise from the physical similarities of geometric shapes. Additional improvements may be realized by modifying the labeling scheme to reduce feature overlap and by preprocessing the images to improve contrast. This new approach represents a significant step toward \svp{enabling the collection and application of population-level class characteristic data to support quantitative assessments of the value of class-characteristic based similarity assessments.} % We do NOT want to even hint at automating away anyone's job.
 \end{abstract}
+%
+% \begin{keyword}
+% Footwear; class characteristics; \mt{random match probability}; computer vision; neural networks
+% \end{keyword}
 
-\begin{keyword}
-Footwear; class characteristics; \mt{random match probability}; computer vision; neural networks
-\end{keyword}
-
-\end{frontmatter}
+% \end{frontmatter}
 
 \linenumbers
 
@@ -150,14 +146,17 @@ Footwear; class characteristics; \mt{random match probability}; computer vision;
 \svp{It is often difficult to recover footwear evidence with sufficient detail to identify individualizing characteristics, either because of degradation or because the medium did not record the individualizing characteristics in sufficient detail to examine. It is common for prints to be only partially recorded or recovered, which further compounds the difficulty of performing these types of analysis.}
 \svp{As a result, }
 % \mt{The process of collecting print evidence from a crime scene is not standardized, and it is often impossible to conduct an individualizing analysis (i.e., one based on randomly acquired characteristics) when a print is partial or of low quality. In fact,
-\mt{ the majority of footwear examinations in the United States reach conclusions regarding the correspondence of class characteristics rather than of individualizing characteristics \citep{smith_2011}.
+the majority of footwear examinations in the United States reach conclusions regarding the correspondence of class characteristics rather than of individualizing characteristics \citep{smith_2011}.
 \svp{This tendency is also reflected in the SWGTREAD range of conclusions scale, which has two separate categories to indicate degrees of class characteristic based association out of a range of 7 conclusions.}
 \svp{Currently, the guidelines also caution against any statistical assessment because accurate data and models to support statistical calculations do not exist.}
 \svp{If it were possible to collect a sufficiently large quantity of footwear impression data from a local population, it would be helpful to be able to calculate the frequency of shoes with similar class characteristics in the population in order to characterize the determinative value of a particular piece of evidence.}
 % In the cases where individualizing characteristics are not used, it may be both possible and useful to assess the random match probability of the footwear evidence at the level of class characteristics; in other words, given a questioned shoe print, what is the probability that a randomly selected shoe in the relevant population has a similar tread pattern?
-\mt{Note that this question is distinct from make and model determination since many shoes of different makes and models can still have similar tread patterns} \svp{on the class characteristic level.} %\fix{[This is an important point. Should I make a bigger deal out of it throughout the paper?]}% if it fits in, that's a good idea.
+Note that this question is distinct from make and model determination since many shoes of different makes and models can still have similar tread patterns \svp{on the class characteristic level.} %\fix{[This is an important point. Should I make a bigger deal out of it throughout the paper?]}% if it fits in, that's a good idea.
 
-\mt{From a statistical perspective, random match probability could theoretically be calculated by sampling a large number of shoes from a given population and calculating the observed proportion of shoes in the sample whose tread patterns are similar to the given print. In practice, one potential method of sampling could be a low-profile scanner placed in a high traffic area. Such a scanner could take impressions or pictures of shoes walking past, and those scans could then be used to create a database of shoes relevant to the local area.}
+% \mt{From a statistical perspective,
+\svp{Statistically, } the \svp{coincidental (or random)} match probability is estimated by sampling a large number of shoes from a given population and calculating the observed proportion of shoes in the sample whose tread patterns are similar to the given print.
+
+% In practice, one potential method of sampling could be a low-profile scanner placed in a high traffic area. Such a scanner could take impressions or pictures of shoes walking past, and those scans could then be used to create a database of shoes relevant to the local area.
 
 \mt{A number of footwear studies (such as those by \citep{parent_sandy_significance_nodate} and \citep{benedict_geographical_2014}) have demonstrated that even a couple hundred shoe prints constitute an unweildy amount of data, which then require a large amount of time and effort to process and analyze. Thus, in parallel with the development of the aforementioned scanner, it is necessary to develop a way to process large amounts of data automatically. The primary focus of this paper is the development of one such method for large-scale automatic data processing.}
 
