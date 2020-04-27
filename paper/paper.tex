@@ -104,7 +104,7 @@ Quantitative assessment of class characteristic frequency is a difficult problem
 
 \section{Introduction}\label{sec:Introduction}
 
-Collection and use of footwear evidence varies heavily across jurisdictions within the United States, and, though it is more common for such analyses to be used in Europe, the U.K., and Israel, many of the same fundamental issues remain. It is often difficult to recover footwear evidence with sufficient detail to identify individualizing characteristics, either because of degradation or because the medium did not record the individualizing characteristics in sufficient detail to examine. It is also common for prints to be only partially recorded or recovered, which further compounds the difficulty of performing these types of analysis. As a result, the majority of footwear examinations in the United States reach conclusions regarding the correspondence of class characteristics rather than of individualizing characteristics \citep{smith_2011}. This tendency is also reflected in the SWGTREAD range of conclusions scale, which has two separate categories to indicate degrees of class characteristic based association out of a range of 7 conclusions\citep{SWGTREAD2013}. Currently, the guidelines also caution against any statistical assessment because accurate data and models to support statistical calculations do not exist. However, if it were possible to collect a sufficiently large quantity of footwear impression data from a local population, it would be helpful to be able to calculate the frequency of shoes in the population that have similar class characteristics to a given shoe or print in order to characterize the determinative value of that particular piece of evidence. Note that this question is distinct from make and model determination since many shoes of different makes and models can still have similar tread patterns on the class characteristic level.
+Collection and use of footwear evidence varies heavily across jurisdictions within the United States, and, though it is more common for such analyses to be used in Europe, the U.K., and Israel, many of the same fundamental issues remain. It is often difficult to recover footwear evidence with sufficient detail to identify individualizing characteristics, either because of degradation or because the medium did not record the individualizing characteristics in sufficient detail to examine. It is also common for prints to be only partially recorded or recovered, which further compounds the difficulty of performing these types of analysis. As a result, the majority of footwear examinations in the United States reach conclusions regarding the correspondence of class characteristics rather than of individualizing characteristics \citep{smith_2011}. This tendency is also reflected in the SWGTREAD range of conclusions scale, which has two separate categories to indicate degrees of class characteristic based association out of a range of 7 conclusions \citep{SWGTREAD2013}. Currently, the guidelines also caution against any statistical assessment because accurate data and models to support statistical calculations do not exist. However, if it were possible to collect a sufficiently large quantity of footwear impression data from a local population, it would be helpful to be able to calculate the frequency of shoes in the population that have similar class characteristics to a given shoe or print in order to characterize the determinative value of that particular piece of evidence. Note that this question is distinct from make and model determination since many shoes of different makes and models can still have similar tread patterns on the class characteristic level.
 
 Statistically, the coincidental (or random) match probability is estimated by sampling a large number of shoes from a given population and calculating the observed proportion of shoes in the sample whose tread patterns are similar to the given print. The primary obstacle to coincidental match probability calculation, then, is one of data collection and annotation. The (limited) number of population class-characteristic studies \citep{parent_sandy_significance_nodate,benedict_geographical_2014} demonstrate the effort required to collect, process, and analyze even a moderate amount of data manually. However, technological innovations over the past decade have automated previously manual tasks such as license plate reading, tracking individuals on video feeds, and other complex tasks. In these comparable situations, two separate but related technological innovations were required: inexpensive and automatic data collection hardware (e.g. via CCTV or video cameras), and automatic, accurate data processing software. We are in the process of developing a low-profile scanner which, when embedded in a pedestrian area, passively collects images of shoe treads (a prototype is shown in \autoref{fig:prototype-scanner}). In parallel, however, it is necessary to develop software which can process the data from a similarly oriented scanner to generate features which are used to make class characteristic comparisons. Through the combination of hardware and software, we hope to enable the collection of population-level footwear data which will facilitate quantitative assessment of class characteristic frequency to support examiner evaluation.
 
@@ -140,7 +140,7 @@ Images collected from a footwear scanner (as described in the previous section) 
 Convolutional neural networks (CNNs) are widely recognized as superior for novel image classification and feature detection. CNNs are a form of artificial neural network which make use of the image convolution operator used by many low-level feature extraction methods, with the additional ability to aggregate such features and meaningfully connect them to a pre-determined set of labels. CNNs have deep architectures that can be trained to identify complex patterns, but they are structurally similar to the architecture of the human visual system and output binary or probabilistic predictions for given labels that are readily interpretable. As CNNs make use of labeled training data, the predictions generated are for features which are similar to those identified by humans, resulting in models with greater face validity. Once a CNN is trained, it is relatively fast and easy to apply the model to new images and obtain classifications.
 
 \paragraph{Transfer Learning}
-Neural networks are composed of sets of layers; the early layers, which are called the model base, contain feature detectors, and the final layers make up the classifier, or model head, which connects meaningful features to classification labels (see \autoref{fig:VGG16-structure} for an example of the structure of a CNN). Each of these layers is composed of sets of weights and connections that are optimized during training. A relatively simple convolutional neural network which processes image data may contain more than 14 million parameters in the model base and an additional 120 million parameters in the model head; to train a model of this nature requires millions of labeled images and a significant amount of computational power. Assembling sufficient data to train a network from scratch is a gargantuan task; the process of \emph{transfer learning} is a natural solution to this common problem. Transfer learning leverages the modularity of neural networks, that is, that the model base that detects features can be separated from the classifier which produces predictions. Transfer learning approaches use the base of a model trained on more general image data and train a new model head or classifier using a smaller set of domain-specific labeled images\citep{oquabLearningTransferringMidlevel2014}. This allows CNNs to be applied to smaller datasets of several thousand images, reduces the amount of computational time required to fit the model, and provides boosted performance compared to training a new model from scratch \citep{yosinskiHowTransferableAre2014}. Transfer learning has been successfully applied in automatic classification of medical images \citep{shinDeepConvolutionalNeural2016} as well as in various applications of shoe forensics \citep{kongCrossDomainForensicShoeprint2017,kongCrossDomainImageMatching2019a,zhangAdaptingConvolutionalNeural2017}.
+Neural networks are composed of sets of layers; the early layers, which are called the model base, contain feature detectors, and the final layers make up the classifier, or model head, which connects meaningful features to classification labels (see \autoref{fig:VGG16-structure} for an example of the structure of a CNN). Each of these layers is composed of sets of weights and connections that are optimized during training. A relatively simple convolutional neural network which processes image data may contain more than 14 million parameters in the model base and an additional 120 million parameters in the model head; to train a model of this nature requires millions of labeled images and a significant amount of computational power. Assembling sufficient data to train a network from scratch is a gargantuan task; the process of \emph{transfer learning} is a natural solution to this common problem. Transfer learning leverages the modularity of neural networks, that is, that the model base that detects features can be separated from the classifier which produces predictions. Transfer learning approaches use the base of a model trained on more general image data and train a new model head or classifier using a smaller set of domain-specific labeled images \citep{oquabLearningTransferringMidlevel2014}. This allows CNNs to be applied to smaller datasets of several thousand images, reduces the amount of computational time required to fit the model, and provides boosted performance compared to training a new model from scratch \citep{yosinskiHowTransferableAre2014}. Transfer learning has been successfully applied in automatic classification of medical images \citep{shinDeepConvolutionalNeural2016} as well as in various applications of shoe forensics \citep{kongCrossDomainForensicShoeprint2017,kongCrossDomainImageMatching2019a,zhangAdaptingConvolutionalNeural2017}.
 
 Many convolutional neural networks have been trained on a subset of images from an online image database called ImageNet \citep{dengImageNetLargeScaleHierarchical}. In particular, there is a standard set of images from ImageNet, consisting of 1.2 million images that span 1,000 categories, that is commonly used in computer vision tasks. CNNs trained on ImageNet are optimized for general human-like vision, that is, the ability to recognize a large set of different features simultaneously. As a result, the base of networks trained on these sets are often used for transfer learning, because the initial layers are broadly generalizable to a wide variety of more specific image labeling tasks. In the next section, we will introduce the pre-trained network VGG16, pictured in \autoref{fig:VGG16-structure}, and examine a selection of its filters (shown in \autoref{fig:vgg16layers}) that demonstrate the levels of detail in the initial layers of a model trained on generic data.
 
@@ -162,7 +162,7 @@ Although the filters of VGG16 have been trained and optimized on the ImageNet da
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
 
-{\centering \includegraphics[width=\maxwidth]{/home/susan/Projects/Work/2019-CoNNORFSI/paper/images/labeled_filters} 
+{\centering \includegraphics[width=\maxwidth]{images/labeled_filters}
 
 }
 
@@ -224,7 +224,7 @@ A reasonable critique of this approach is that images collected from online reta
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
 
-{\centering \includegraphics[width=0.8\linewidth]{figure/class-characteristic-barchart-1} 
+{\centering \includegraphics[width=0.8\linewidth]{figure/class-characteristic-barchart-1}
 
 }
 
@@ -262,7 +262,7 @@ During model fitting, the model ``learns" from the training set and is evaluated
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[h]
 
-{\centering \includegraphics[width=.75\textwidth]{figure/training-accuracy-1} 
+{\centering \includegraphics[width=.75\textwidth]{figure/training-accuracy-1}
 
 }
 
@@ -282,7 +282,7 @@ For each image in the test set, the ``true" labels are nine human-assigned label
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
 
-{\centering \includegraphics[width=.5\textwidth]{figure/overall-roc-1} 
+{\centering \includegraphics[width=.5\textwidth]{figure/overall-roc-1}
 
 }
 
@@ -295,7 +295,7 @@ For each image in the test set, the ``true" labels are nine human-assigned label
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
 
-{\centering \includegraphics[width=\textwidth]{figure/class-roc-1} 
+{\centering \includegraphics[width=\textwidth]{figure/class-roc-1}
 
 }
 
@@ -318,7 +318,7 @@ The first rows of \autoref{fig:exemplars} are images which contain only one of t
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[p!]
 
-{\centering \includegraphics[width=1\linewidth]{figure/exemplars-1} 
+{\centering \includegraphics[width=1\linewidth]{figure/exemplars-1}
 
 }
 
@@ -333,7 +333,7 @@ While figure \ref{fig:exemplars} shows representative examples of classification
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[p!]
 
-{\centering \includegraphics[width=1\linewidth]{figure/circle-text-consistency-1} 
+{\centering \includegraphics[width=1\linewidth]{figure/circle-text-consistency-1}
 
 }
 
@@ -349,7 +349,7 @@ Figures \ref{fig:exemplars} and \ref{fig:circle-text-consistency} show predictio
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
 
-{\centering \includegraphics[width=\textwidth]{figure/confusion-matrix-1} 
+{\centering \includegraphics[width=\textwidth]{figure/confusion-matrix-1}
 
 }
 
@@ -370,7 +370,7 @@ As described earlier, the images used for this research were obtained from onlin
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[p!]
 
-{\centering \includegraphics[width=1\linewidth]{figure/low-contrast-consistency-1} 
+{\centering \includegraphics[width=1\linewidth]{figure/low-contrast-consistency-1}
 
 }
 
@@ -399,7 +399,7 @@ The shape categories with the largest number of images, shown in \autoref{fig:cl
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
 
-{\centering \includegraphics[width=1\linewidth]{figure/brand-plots-1} 
+{\centering \includegraphics[width=1\linewidth]{figure/brand-plots-1}
 
 }
 
@@ -418,29 +418,29 @@ Figures \ref{fig:ugg-heatmap}-\ref{fig:dc-heatmap} show a number of images along
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[!p]
 
-{\centering \includegraphics[width=.95\textwidth]{/home/susan/Projects/Work/2019-CoNNORFSI/paper/images/heatmaps/processed/heatmap-a7-Ugg-grey} 
+{\centering \includegraphics[width=.95\textwidth]{images/heatmaps/processed/heatmap-a7-Ugg-grey}
 
 }
 
-\caption{A section of an UGG shoe containing the logo. The model correctly identifies triangles and text (and references the correct portion of the image in both cases). The model identifies a circle as well; while it could be argued that the triangles form an implicit circle, the heatmap demonstrates that the circular portion of the image is the ``G", which would not be a closed figure labeled as a circle. The model's prediction of the presence of a circle is understandable, but incorrect.\label{fig:ugg-heatmap}}\label{fig:current-heatmaps1}
+\caption{A section of an UGG shoe containing the logo. The model correctly identifies triangles and text (and references the correct portion of the image in both cases). The model identifies a circle as well; while it could be argued that the triangles form an implicit circle, the heatmap demonstrates that the circular portion of the image is the ``G", which would not be a closed figure labeled as a circle. The model's prediction of the presence of a circle is understandable, but incorrect.\label{fig:ugg-heatmap}}\label{fig:current-heatmaps}
 \end{figure}
 
 \begin{figure}[!p]
 
-{\centering \includegraphics[width=.95\textwidth]{/home/susan/Projects/Work/2019-CoNNORFSI/paper/images/heatmaps/processed/heatmap-text-seychelles} 
+{\centering \includegraphics[width=.95\textwidth]{images/heatmaps/processed/heatmap-text-seychelles}
 
 }
 
-\caption{In this image of a Seychelles shoe, the model identifies text and circle. The prediction of text is correct; the prediction of circle is not---there are very round shapes, but they do not form a closed figure that could be identified as a circle.\label{fig:seychelles-heatmap}}\label{fig:current-heatmaps2}
+\caption{In this image of a Seychelles shoe, the model identifies text and circle. The prediction of text is correct; the prediction of circle is not---there are very round shapes, but they do not form a closed figure that could be identified as a circle.\label{fig:seychelles-heatmap}}\label{fig:current-heatmaps}
 \end{figure}
 
 \begin{figure}[!p]
 
-{\centering \includegraphics[width=.95\textwidth]{/home/susan/Projects/Work/2019-CoNNORFSI/paper/images/heatmaps/processed/heatmap-04-circle_quad-2-dc-vestrey-black-camo_product_9065558_color_12784} 
+{\centering \includegraphics[width=.95\textwidth]{images/heatmaps/processed/heatmap-04-circle_quad-2-dc-vestrey-black-camo_product_9065558_color_12784}
 
 }
 
-\caption{This image from a DC shoe contains repeating instances of a shape that appears to be a combination of a circle and quadrilateral, but does not technically fall into any of the nine categories used in our labeling scheme. The model assigns high probabilities of circle and quadrilateral and indicates that the proper image features are being used for this classification. The prediction of polygon is incorrect but reasonable considering that many small hexagons are indistinguishable from circles.\label{fig:dc-heatmap}}\label{fig:current-heatmaps3}
+\caption{This image from a DC shoe contains repeating instances of a shape that appears to be a combination of a circle and quadrilateral, but does not technically fall into any of the nine categories used in our labeling scheme. The model assigns high probabilities of circle and quadrilateral and indicates that the proper image features are being used for this classification. The prediction of polygon is incorrect but reasonable considering that many small hexagons are indistinguishable from circles.\label{fig:dc-heatmap}}\label{fig:current-heatmaps}
 \end{figure}
 
 
